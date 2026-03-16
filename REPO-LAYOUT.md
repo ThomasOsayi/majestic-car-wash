@@ -21,7 +21,17 @@ majestic-car-wash/
 │   │   ├── layout.tsx
 │   │   ├── page.tsx
 │   │   ├── signup/
-│   │   │   └── page.tsx
+│   │   │   ├── page.tsx
+│   │   │   └── success/
+│   │   │       └── page.tsx
+│   │   ├── api/
+│   │   │   ├── create-checkout-session/
+│   │   │   │   └── route.ts
+│   │   │   ├── verify-session/
+│   │   │   │   └── route.ts
+│   │   │   └── webhooks/
+│   │   │       └── stripe/
+│   │   │           └── route.ts
 │   │   ├── login/
 │   │   │   └── page.tsx
 │   │   ├── member/
@@ -92,7 +102,8 @@ majestic-car-wash/
 | Route | File | Summary |
 |-------|------|--------|
 | `/` | `src/app/page.tsx` | Single-page marketing site with all sections and smooth scroll anchors. |
-| `/signup` | `src/app/signup/page.tsx` | Multi-step membership signup (plan → vehicle → info → payment) that creates a member record in Firestore and sets pricing/status metadata. |
+| `/signup` | `src/app/signup/page.tsx` | Multi-step membership signup (plan → vehicle → info → payment) that sends details to `/api/create-checkout-session` and redirects to Stripe Checkout. |
+| `/signup/success` | `src/app/signup/success/page.tsx` | Post-checkout activation page: verifies the Stripe session via `/api/verify-session`, then creates the member in Firestore and stores `memberId` in `localStorage`. |
 | `/login` | `src/app/login/page.tsx` | Member login by phone or email; looks up an existing member in Firestore and stores `memberId` in `localStorage`, then routes to `/member`. |
 | `/member` | `src/app/member/page.tsx` | Member dashboard: shows QR code, membership status, billing info, vehicle, visit history, monthly wash count, estimated savings, and pause/cancel/reactivate controls (backed by Firestore). |
 | `/staff-login` | `src/app/staff-login/page.tsx` | Simple 4-digit PIN screen for staff; currently routes to `/admin` on any 4-digit PIN (placeholder auth). |
@@ -136,8 +147,8 @@ majestic-car-wash/
   **With `?plan`:** 1) Vehicle → 2) Info → 3) Payment.
 - **Vehicle step:** Vehicle type (Sedan / SUV / Minivan) with +$5 for SUV/van; make/model: type-ahead make search (e.g. Tesla, BMW) with “Popular in Beverly Grove” vs “All Brands”, then model chips; color, plate.
 - **Info step:** First name, last name, email, phone.
-- **Payment step:** Card number (masked display, 4-group formatting), expiry (MM/YY), CVC; summary with plan, monthly total, next charge date, “Start membership” submit.
-- **Persistence:** On successful “Start membership”, a new member document is created in Firestore with plan, pricing, status, vehicle, and billing metadata; the generated `memberId` is stored in `localStorage` for use by `/member`.
+- **Payment step:** Shows final pricing summary (first month at $14.99, then plan rate + surcharge) and calls `/api/create-checkout-session` to construct a Stripe Checkout subscription with a first-month promo discount; user is redirected to Stripe-hosted checkout.
+- **Post-checkout:** On return to `/signup/success?session_id=...`, the app verifies the session server-side via `/api/verify-session`, computes next billing date, and persists the member in Firestore with Stripe customer/subscription IDs.
 - **UI:** Top bar (logo + “Back to site”), step progress indicator, single card layout.
 
 ---
@@ -195,12 +206,31 @@ majestic-car-wash/
 
 ---
 
+### Payments & Stripe integration
+
+- **Server Stripe client:** `src/lib/stripe.ts` exports `getServerStripe()` for API routes, configured with `STRIPE_SECRET_KEY` and a pinned API version.
+- **Checkout session creation:** `src/app/api/create-checkout-session/route.ts`:
+  - Validates incoming plan and customer data from the signup form.
+  - Creates a Stripe customer with vehicle metadata.
+  - Creates a monthly recurring price for the chosen plan + vehicle surcharge.
+  - Creates a one-time coupon so the **first month is $14.99**, regardless of plan.
+  - Starts a Stripe Checkout subscription session and returns its URL to the client.
+- **Session verification:** `src/app/api/verify-session/route.ts`:
+  - Retrieves the Checkout Session (expanding `subscription` and `customer`).
+  - Confirms payment is completed.
+  - Reads member details (plan, pricing, vehicle, contact, surcharge) from subscription metadata.
+  - Computes the human-readable next billing date and returns a normalized member payload to the success page.
+- **Webhooks:** `src/app/api/webhooks/stripe/route.ts`:
+  - Verifies Stripe signatures with `STRIPE_WEBHOOK_SECRET`.
+  - Handles events like `checkout.session.completed`, `invoice.payment_succeeded`, `invoice.payment_failed`, and `customer.subscription.deleted` (currently logs only, with comments on where to update Firestore in production).
+
+---
+
 ## Not implemented (or placeholder)
 
 - **Footer:** Markup only; no links, social, or legal copy.
 - **Auth security:** Staff login uses a dummy 4-digit PIN flow with no real authentication; member auth is by phone/email lookup only (no passwords/OTP yet).
-- **API routes:** No dedicated Next.js API routes; all Firestore access is from client components.
-- **Payments:** Card fields are UI only; Stripe is mentioned in legal copy but not yet wired up in code.
+- **Payments edge cases:** Stripe webhooks currently just log events; they do not yet update Firestore on renewal, failure, or cancellation, so membership status/billing dates are not fully source-of-truth from Stripe.
 - **QR scanning:** “Scan QR Code” flows in admin are UI placeholders; no camera/QR integration yet.
 - **ScrollToTopOnLoad:** Still no dedicated component; scroll restoration handled via inline script in `layout.tsx`.
 

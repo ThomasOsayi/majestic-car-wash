@@ -7,7 +7,7 @@ const PLAN_PRICES: Record<string, { name: string; monthly: number }> = {
   ultimate: { name: "Ultimate", monthly: 6499 },
 };
 
-const PROMO_PRICE = 1499; // $14.99 in cents
+const PROMO_PRICE = 1499;
 
 export async function POST(req: NextRequest) {
   try {
@@ -29,7 +29,6 @@ export async function POST(req: NextRequest) {
     const planData = PLAN_PRICES[plan];
     const monthlyAmount = planData.monthly + (surcharge ? surcharge * 100 : 0);
 
-    // Create Stripe customer
     const customer = await stripe.customers.create({
       email,
       name: `${firstName} ${lastName}`,
@@ -37,7 +36,6 @@ export async function POST(req: NextRequest) {
       metadata: { vehicleType, make, model, color, plate },
     });
 
-    // Create recurring price
     const price = await stripe.prices.create({
       currency: "usd",
       unit_amount: monthlyAmount,
@@ -48,7 +46,6 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Create first-month promo coupon
     const discountAmount = monthlyAmount - PROMO_PRICE;
     let couponId: string | undefined;
     if (discountAmount > 0) {
@@ -61,7 +58,6 @@ export async function POST(req: NextRequest) {
       couponId = coupon.id;
     }
 
-    // Create subscription with incomplete status — waits for payment confirmation
     const subscriptionParams: any = {
       customer: customer.id,
       items: [{ price: price.id }],
@@ -69,8 +65,7 @@ export async function POST(req: NextRequest) {
       payment_settings: { save_default_payment_method: "on_subscription" },
       expand: ["latest_invoice.payment_intent"],
       metadata: {
-        plan,
-        planName: planData.name,
+        plan, planName: planData.name,
         price: (monthlyAmount / 100).toFixed(2),
         firstName, lastName, email, phone,
         vehicleType, make, model, color,
@@ -84,7 +79,6 @@ export async function POST(req: NextRequest) {
     }
 
     const subscription = await stripe.subscriptions.create(subscriptionParams);
-
     const invoice = subscription.latest_invoice as any;
     const paymentIntent = invoice.payment_intent as any;
 
