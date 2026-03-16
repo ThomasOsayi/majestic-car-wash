@@ -3,7 +3,6 @@
 import { useSearchParams } from "next/navigation";
 import { useState, useRef, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { createMember } from "@/lib/firestore";
 
 /* ===== DATA ===== */
 const PLANS: Record<string, { name: string; price: number; desc: string }> = {
@@ -69,14 +68,11 @@ function SignupForm() {
   const [vehicleType, setVehicleType] = useState("sedan");
   const [surcharge, setSurcharge] = useState(0);
   const [submitting, setSubmitting] = useState(false);
-  const [memberId, setMemberId] = useState<string | null>(null);
   const [form, setForm] = useState({
     make: "", model: "", color: "", plate: "",
     firstName: "", lastName: "", email: "", phone: "",
-    cardNumber: "", expiry: "", cvc: "",
   });
 
-  // Make search state
   const [makeQuery, setMakeQuery] = useState("");
   const [makeDropdownOpen, setMakeDropdownOpen] = useState(false);
   const [selectedMakeObj, setSelectedMakeObj] = useState<CarMake | null>(null);
@@ -139,63 +135,45 @@ function SignupForm() {
   const otherMakes = filteredMakes.filter((m) => !m.popular);
   const showPopularHeader = makeQuery.length < 2 && popularMakes.length > 0;
 
-  function formatCardNumber(value: string) {
-    const digits = value.replace(/\D/g, "").substring(0, 16);
-    return digits.replace(/(\d{4})(?=\d)/g, "$1 ");
-  }
-
-  function formatExpiry(value: string) {
-    const digits = value.replace(/\D/g, "").substring(0, 4);
-    if (digits.length >= 2) return digits.substring(0, 2) + " / " + digits.substring(2);
-    return digits;
-  }
-
-  function getLastFour() {
-    const digits = form.cardNumber.replace(/\D/g, "");
-    return digits.length >= 13 ? digits.slice(-4) : "••••";
-  }
-
   function getNextChargeDate() {
     const d = new Date();
     d.setMonth(d.getMonth() + 1);
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   }
 
-  /* ===== SUBMIT TO FIRESTORE ===== */
-  async function handleSubmitMembership() {
+  /* ===== REDIRECT TO STRIPE CHECKOUT ===== */
+  async function handleCheckout() {
     if (submitting) return;
     setSubmitting(true);
 
     try {
-      const nextBilling = getNextChargeDate();
-      const memberSince = new Date().toLocaleDateString("en-US", { month: "short", year: "numeric" });
-
-      const id = await createMember({
-        firstName: form.firstName,
-        lastName: form.lastName,
-        email: form.email,
-        phone: form.phone,
-        plan: plan as "essential" | "premium" | "ultimate",
-        planName: currentPlan.name,
-        price: currentPlan.price,
-        status: "active",
-        vehicleType: vehicleType as "sedan" | "suv" | "van",
-        make: form.make,
-        model: form.model,
-        color: form.color,
-        plate: form.plate.toUpperCase(),
-        surcharge,
-        memberSince,
-        nextBilling,
+      const res = await fetch("/api/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          plan,
+          firstName: form.firstName,
+          lastName: form.lastName,
+          email: form.email,
+          phone: form.phone,
+          vehicleType,
+          make: form.make,
+          model: form.model,
+          color: form.color,
+          plate: form.plate,
+          surcharge,
+        }),
       });
 
-      setMemberId(id);
-      localStorage.setItem("memberId", id);
-      setStep(5);
-    } catch (error) {
-      console.error("Failed to create member:", error);
-      alert("Something went wrong. Please try again.");
-    } finally {
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || "Failed to create checkout");
+
+      // Redirect to Stripe Checkout
+      window.location.href = data.url;
+    } catch (error: any) {
+      console.error("Checkout failed:", error);
+      alert(error.message || "Something went wrong. Please try again.");
       setSubmitting(false);
     }
   }
@@ -423,82 +401,40 @@ function SignupForm() {
             </div>
           )}
 
-          {/* STEP 4: Payment */}
+          {/* STEP 4: Review & Pay via Stripe */}
           {step === 4 && (
             <div className="signup-step-content">
-              <h2 className="signup-title">Payment</h2>
-              <p className="signup-desc">Secure checkout. Your card will be charged <strong>$14.99</strong> today.</p>
-              <div className="card-visual">
-                <div className="card-chip" />
-                <div className="card-number-display">•••• •••• •••• {getLastFour()}</div>
-                <div className="card-bottom-row">
-                  <div>
-                    <div className="card-meta-label">Card Holder</div>
-                    <div className="card-meta-value">{form.firstName || form.lastName ? `${form.firstName} ${form.lastName}`.trim() : "YOUR NAME"}</div>
-                  </div>
-                  <div>
-                    <div className="card-meta-label">Expires</div>
-                    <div className="card-meta-value">{form.expiry || "MM/YY"}</div>
-                  </div>
-                </div>
-              </div>
-              <div className="card-fields">
-                <div className="field-group" style={{ gridColumn: "span 2" }}>
-                  <label className="signup-label">Card Number</label>
-                  <input className="signup-input" placeholder="1234 5678 9012 3456" maxLength={19} value={form.cardNumber} onChange={(e) => updateField("cardNumber", formatCardNumber(e.target.value))} />
-                </div>
-                <div className="field-group">
-                  <label className="signup-label">Expiry</label>
-                  <input className="signup-input" placeholder="MM / YY" maxLength={7} value={form.expiry} onChange={(e) => updateField("expiry", formatExpiry(e.target.value))} />
-                </div>
-                <div className="field-group">
-                  <label className="signup-label">CVC</label>
-                  <input className="signup-input" placeholder="123" maxLength={4} value={form.cvc} onChange={(e) => updateField("cvc", e.target.value.replace(/\D/g, "").substring(0, 4))} />
-                </div>
-              </div>
+              <h2 className="signup-title">Review &amp; Pay</h2>
+              <p className="signup-desc">Review your membership details, then complete payment securely with Stripe.</p>
+
+              {/* Order summary */}
               <div className="summary-box">
+                <div className="summary-row"><span>Plan</span><strong>{currentPlan.name}</strong></div>
+                <div className="summary-row"><span>Vehicle</span><strong>{form.make} {form.model}</strong></div>
+                <div className="summary-row"><span>Plate</span><strong>{form.plate || "—"}</strong></div>
+                <div className="summary-row"><span>Member</span><strong>{form.firstName} {form.lastName}</strong></div>
+                <hr className="summary-divider" />
                 <div className="summary-row"><span>{currentPlan.name} Plan</span><strong>${currentPlan.price.toFixed(2)}/mo</strong></div>
                 {surcharge > 0 && <div className="summary-row"><span>SUV/Van surcharge</span><strong>+$5.00/mo</strong></div>}
+                <div className="summary-row"><span>Monthly after trial</span><strong>${monthlyTotal.toFixed(2)}/mo</strong></div>
                 <hr className="summary-divider" />
-                <div className="summary-row"><span>Monthly after trial</span><strong>${monthlyTotal.toFixed(2)}</strong></div>
                 <div className="summary-row summary-total-row"><span>Due today</span><strong>${PROMO_PRICE.toFixed(2)}</strong></div>
                 <div className="summary-savings"><span>✓ First month promo applied — you save ${savings.toFixed(2)}</span></div>
+                <div className="summary-row" style={{ marginTop: "8px" }}><span>Next charge</span><strong>{getNextChargeDate()}</strong></div>
               </div>
+
               <div className="signup-btns">
                 <button className="signup-btn ghost" onClick={() => setStep(3)} disabled={submitting}>← Back</button>
                 <button
                   className="signup-btn gold"
-                  onClick={handleSubmitMembership}
+                  onClick={handleCheckout}
                   disabled={submitting}
                   style={submitting ? { opacity: 0.6, cursor: "not-allowed" } : {}}
                 >
-                  {submitting ? "Creating membership..." : "Start Membership — $14.99 →"}
+                  {submitting ? "Redirecting to checkout..." : "Proceed to Secure Checkout →"}
                 </button>
               </div>
-              <div className="secure-note"><span>🔒</span><span>256-bit SSL encryption. Powered by Stripe.</span></div>
-            </div>
-          )}
-
-          {/* STEP 5: Confirmation */}
-          {step === 5 && (
-            <div className="signup-step-content confirm-wrap">
-              <div className="confirm-icon">✓</div>
-              <h2 className="confirm-title">Welcome to Majestic!</h2>
-              <p className="confirm-sub">Your membership is active. Drive in anytime —<br />just give us your name or plate number at check-in.</p>
-              <div className="confirm-details">
-                <h4>Membership Details</h4>
-                <div className="confirm-row"><span>Plan</span><strong>{currentPlan.name}</strong></div>
-                <div className="confirm-row"><span>Vehicle</span><strong>{form.make} {form.model}</strong></div>
-                <div className="confirm-row"><span>Plate</span><strong>{form.plate || "—"}</strong></div>
-                <div className="confirm-row"><span>Charged today</span><strong className="gold-text">${PROMO_PRICE.toFixed(2)}</strong></div>
-                <div className="confirm-row"><span>Next charge</span><strong>{getNextChargeDate()}</strong></div>
-                {memberId && (
-                  <div className="confirm-row"><span>Member ID</span><strong style={{ fontSize: "12px", opacity: 0.5 }}>{memberId}</strong></div>
-                )}
-              </div>
-              <div className="signup-btns" style={{ justifyContent: "center" }}>
-                <Link href="/" className="signup-btn primary" style={{ flex: "none", padding: "16px 40px", textDecoration: "none" }}>Visit Majestic →</Link>
-              </div>
+              <div className="secure-note"><span>🔒</span><span>Secure payment powered by Stripe. Your card info never touches our server.</span></div>
             </div>
           )}
 

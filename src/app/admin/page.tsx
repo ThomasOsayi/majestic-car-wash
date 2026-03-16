@@ -171,8 +171,9 @@ export default function AdminPage() {
     setLookupQuery("");
     setCheckedIn(false);
 
-    // Wait for DOM element to render
     await new Promise((r) => setTimeout(r, 100));
+
+    let scanned = false;
 
     try {
       const { Html5Qrcode } = await import("html5-qrcode");
@@ -188,12 +189,13 @@ export default function AdminPage() {
         { facingMode: "environment" },
         { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
         async (decodedText: string) => {
-          // Stop scanner immediately on successful scan
+          if (scanned) return;
+          scanned = true;
+
           try { await scanner.stop(); } catch { /* ignore */ }
           setScannerOpen(false);
           html5ScannerRef.current = null;
 
-          // Parse MCW:{memberId} format
           const memberId = decodedText.startsWith("MCW:") ? decodedText.slice(4) : decodedText;
 
           try {
@@ -208,7 +210,7 @@ export default function AdminPage() {
             setScanError("Failed to look up member. Please try again.");
           }
         },
-        () => { /* ignore scan failures (no QR in frame) */ }
+        () => { /* ignore scan failures */ }
       );
     } catch (err: any) {
       console.error("Scanner error:", err);

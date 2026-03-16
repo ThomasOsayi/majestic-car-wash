@@ -34,6 +34,8 @@ import {
     surcharge: number;
     memberSince: string;
     nextBilling: string;
+    stripeCustomerId?: string;
+    stripeSubscriptionId?: string;
     createdAt?: Timestamp;
   }
   
