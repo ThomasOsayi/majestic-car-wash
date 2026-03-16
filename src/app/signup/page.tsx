@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useState, useRef, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { createMember } from "@/lib/firestore";
 
 /* ===== DATA ===== */
 const PLANS: Record<string, { name: string; price: number; desc: string }> = {
@@ -67,6 +68,8 @@ function SignupForm() {
   const [plan, setPlan] = useState(planParam && PLANS[planParam] ? planParam : "premium");
   const [vehicleType, setVehicleType] = useState("sedan");
   const [surcharge, setSurcharge] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [memberId, setMemberId] = useState<string | null>(null);
   const [form, setForm] = useState({
     make: "", model: "", color: "", plate: "",
     firstName: "", lastName: "", email: "", phone: "",
@@ -90,7 +93,6 @@ function SignupForm() {
   const totalSteps = steps.length;
   const stepIndex = hasPreselectedPlan ? step - 1 : step;
 
-  // Close dropdown on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (searchWrapRef.current && !searchWrapRef.current.contains(e.target as Node)) {
@@ -129,7 +131,6 @@ function SignupForm() {
     updateField("model", model);
   }
 
-  // Filtered makes
   const filteredMakes = makeQuery.length === 0
     ? CAR_MAKES
     : CAR_MAKES.filter((m) => m.name.toLowerCase().includes(makeQuery.toLowerCase()));
@@ -158,6 +159,44 @@ function SignupForm() {
     const d = new Date();
     d.setMonth(d.getMonth() + 1);
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  }
+
+  /* ===== SUBMIT TO FIRESTORE ===== */
+  async function handleSubmitMembership() {
+    if (submitting) return;
+    setSubmitting(true);
+
+    try {
+      const nextBilling = getNextChargeDate();
+      const memberSince = new Date().toLocaleDateString("en-US", { month: "short", year: "numeric" });
+
+      const id = await createMember({
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        phone: form.phone,
+        plan: plan as "essential" | "premium" | "ultimate",
+        planName: currentPlan.name,
+        price: currentPlan.price,
+        status: "active",
+        vehicleType: vehicleType as "sedan" | "suv" | "van",
+        make: form.make,
+        model: form.model,
+        color: form.color,
+        plate: form.plate.toUpperCase(),
+        surcharge,
+        memberSince,
+        nextBilling,
+      });
+
+      setMemberId(id);
+      setStep(5);
+    } catch (error) {
+      console.error("Failed to create member:", error);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -253,7 +292,6 @@ function SignupForm() {
 
               <label className="signup-label">Make &amp; Model</label>
 
-              {/* Selected make badge */}
               {selectedMakeObj && (
                 <div className="make-badge">
                   <div className="make-badge-logo">{selectedMakeObj.icon}</div>
@@ -265,7 +303,6 @@ function SignupForm() {
                 </div>
               )}
 
-              {/* Type-ahead search */}
               {!selectedMakeObj && (
                 <div className="make-search-wrap" ref={searchWrapRef}>
                   <div className="make-search-icon">🔍</div>
@@ -314,7 +351,6 @@ function SignupForm() {
                 </div>
               )}
 
-              {/* Model chips */}
               {selectedMakeObj && (
                 <div className="model-chips-section">
                   <div className="model-chips">
@@ -428,8 +464,15 @@ function SignupForm() {
                 <div className="summary-savings"><span>✓ First month promo applied — you save ${savings.toFixed(2)}</span></div>
               </div>
               <div className="signup-btns">
-                <button className="signup-btn ghost" onClick={() => setStep(3)}>← Back</button>
-                <button className="signup-btn gold" onClick={() => setStep(5)}>Start Membership — $14.99 →</button>
+                <button className="signup-btn ghost" onClick={() => setStep(3)} disabled={submitting}>← Back</button>
+                <button
+                  className="signup-btn gold"
+                  onClick={handleSubmitMembership}
+                  disabled={submitting}
+                  style={submitting ? { opacity: 0.6, cursor: "not-allowed" } : {}}
+                >
+                  {submitting ? "Creating membership..." : "Start Membership — $14.99 →"}
+                </button>
               </div>
               <div className="secure-note"><span>🔒</span><span>256-bit SSL encryption. Powered by Stripe.</span></div>
             </div>
@@ -448,6 +491,9 @@ function SignupForm() {
                 <div className="confirm-row"><span>Plate</span><strong>{form.plate || "—"}</strong></div>
                 <div className="confirm-row"><span>Charged today</span><strong className="gold-text">${PROMO_PRICE.toFixed(2)}</strong></div>
                 <div className="confirm-row"><span>Next charge</span><strong>{getNextChargeDate()}</strong></div>
+                {memberId && (
+                  <div className="confirm-row"><span>Member ID</span><strong style={{ fontSize: "12px", opacity: 0.5 }}>{memberId}</strong></div>
+                )}
               </div>
               <div className="signup-btns" style={{ justifyContent: "center" }}>
                 <Link href="/" className="signup-btn primary" style={{ flex: "none", padding: "16px 40px", textDecoration: "none" }}>Visit Majestic →</Link>

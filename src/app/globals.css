@@ -263,6 +263,7 @@ section { padding: 110px 48px; }
   content: '';
   position: absolute; top: -50%; left: -50%;
   width: 200%; height: 200%;
+  pointer-events: none;
   background: linear-gradient(
     45deg,
     transparent 40%,
@@ -2381,4 +2382,22 @@ select.signup-input option { background: var(--navy); color: white; }
   .legal-wrap { padding: 16px 20px 60px; }
   .legal-header h1 { font-size: 28px; }
   .legal-topbar { padding: 16px 20px; }
+}
+
+/* Admin table — 7 column layout */
+.adm-table-7col {
+  grid-template-columns: 2fr 1.2fr 0.8fr 0.8fr 0.8fr 0.6fr 0.8fr !important;
+}
+.adm-table-duration {
+  font-size: 13px; font-weight: 600; color: #1A1A2E;
+}
+
+@media (max-width: 900px) {
+  .adm-table-7col {
+    grid-template-columns: 2fr 1fr 1fr !important;
+  }
+  .adm-table-7col > :nth-child(4),
+  .adm-table-7col > :nth-child(5),
+  .adm-table-7col > :nth-child(6),
+  .adm-table-7col > :nth-child(7) { display: none; }
 }

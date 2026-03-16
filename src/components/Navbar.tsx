@@ -32,7 +32,7 @@ export default function Navbar() {
           <a href="#reviews" onClick={(e) => scrollTo(e, "#reviews")}>Reviews</a>
           <a href="#location" onClick={(e) => scrollTo(e, "#location")}>Location</a>
           <Link href="/login" className="nav-member-login">Member Login</Link>
-          <Link href="/signup" className="nav-join">Join Now</Link>
+          <a href="#membership" className="nav-join" onClick={(e) => scrollTo(e, "#membership")}>Join Now</a>
         </div>
       </div>
     </nav>
