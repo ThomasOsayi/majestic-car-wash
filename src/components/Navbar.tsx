@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -30,7 +31,8 @@ export default function Navbar() {
           <a href="#gallery" onClick={(e) => scrollTo(e, "#gallery")}>Gallery</a>
           <a href="#reviews" onClick={(e) => scrollTo(e, "#reviews")}>Reviews</a>
           <a href="#location" onClick={(e) => scrollTo(e, "#location")}>Location</a>
-          <a href="#membership" className="nav-join" onClick={(e) => scrollTo(e, "#membership")}>Join Now</a>
+          <Link href="/login" className="nav-member-login">Member Login</Link>
+          <Link href="/signup" className="nav-join">Join Now</Link>
         </div>
       </div>
     </nav>
