@@ -1,25 +1,27 @@
+import RevealOnScroll from "./RevealOnScroll";
+
 export default function Location() {
   return (
     <section className="location" id="location">
       <div className="section-inner">
-        <div className="reveal">
+        <RevealOnScroll>
           <div className="section-label">Visit Us</div>
           <div className="section-title">
             Beverly Grove,
             <br />
             Los Angeles
           </div>
-        </div>
+        </RevealOnScroll>
         <div className="loc-grid">
-          <div className="loc-map reveal">
+          <RevealOnScroll className="loc-map">
             <iframe
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3305.3!2d-118.364!3d34.072!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80c2b92d4e7f5c5b%3A0x831ea8a3cc6e8af9!2sMajestic%20Car%20Wash!5e0!3m2!1sen!2sus!4v1700000000000!5m2!1sen!2sus"
               allowFullScreen
               loading="lazy"
               title="Majestic Car Wash location"
             ></iframe>
-          </div>
-          <div className="loc-info reveal">
+          </RevealOnScroll>
+          <RevealOnScroll className="loc-info" delay={150}>
             <div className="loc-item">
               <div className="loc-icon">📍</div>
               <div>
@@ -64,7 +66,7 @@ export default function Location() {
               <h4>🚗 Drive In — No Appointment Needed</h4>
               <p>Walk-ins welcome 7 days a week. Members skip the line.</p>
             </div>
-          </div>
+          </RevealOnScroll>
         </div>
       </div>
     </section>

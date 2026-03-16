@@ -1,9 +1,29 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+
 export default function Hero() {
+  const bgRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (bgRef.current) {
+        const y = window.scrollY;
+        bgRef.current.style.transform = `translateY(${y * 0.35}px) scale(1.1)`;
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <section className="hero">
-      <div className="hero-bg">
+      <div className="hero-bg" ref={bgRef}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=1800&q=80" alt="Car being washed" />
+        <img
+          src="https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=1800&q=80"
+          alt="Car being washed"
+        />
       </div>
       <div className="hero-content">
         <div className="hero-tag">

@@ -224,10 +224,75 @@ section { padding: 110px 48px; }
 
 /* ===== SCROLL REVEAL ===== */
 .reveal {
-  opacity: 0; transform: translateY(36px);
-  transition: all 0.75s cubic-bezier(0.16,1,0.3,1);
+  opacity: 0;
+  transform: translateY(36px);
+  transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1),
+              transform 0.8s cubic-bezier(0.16,1,0.3,1);
 }
-.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== ENHANCED HOVER & INTERACTIONS ===== */
+.btn { position: relative; overflow: hidden; }
+.btn::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.15), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+}
+.btn:hover::after { transform: translateX(100%); }
+
+/* Badge pulse */
+.about-badge {
+  animation: badgePulse 3s ease-in-out infinite;
+}
+@keyframes badgePulse {
+  0%, 100% { box-shadow: 0 8px 32px rgba(212,32,44,0.3); }
+  50% { box-shadow: 0 8px 48px rgba(212,32,44,0.5); }
+}
+
+/* Card tilt on hover */
+.svc-card { transition: all 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s ease; }
+.rev-card { transition: all 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s ease; }
+
+/* Gold shimmer on featured card */
+.p-card.featured::after {
+  content: '';
+  position: absolute; top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 40%,
+    rgba(201,162,77,0.03) 45%,
+    rgba(201,162,77,0.06) 50%,
+    rgba(201,162,77,0.03) 55%,
+    transparent 60%
+  );
+  animation: shimmer 6s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0% { transform: translateX(-30%) translateY(-30%) rotate(0deg); }
+  100% { transform: translateX(30%) translateY(30%) rotate(0deg); }
+}
+
+/* Gallery zoom smoothing */
+.gallery-cell { transition: transform 0.5s cubic-bezier(0.16,1,0.3,1); }
+.gallery-cell:hover { transform: scale(1.02); }
+
+/* Promo strip glow */
+.promo-strip {
+  animation: promoGlow 4s ease-in-out infinite alternate;
+}
+@keyframes promoGlow {
+  from { box-shadow: 0 0 20px rgba(201,162,77,0.05); }
+  to { box-shadow: 0 0 40px rgba(201,162,77,0.15); }
+}
+
+/* Hero parallax overflow */
+.hero-bg { will-change: transform; transition: none; }
 
 /* ===== ABOUT ===== */
 .about { background: var(--cream); }
@@ -600,4 +665,371 @@ footer {
   .about-features { grid-template-columns: 1fr; }
   .hero-photo-strip { display: none; }
   .pricing-grid { max-width: 420px; margin-left: auto; margin-right: auto; }
+}
+
+/* ========================================
+   SIGNUP PAGE
+   ======================================== */
+.signup-page {
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center;
+  background: var(--navy);
+  overflow-x: hidden;
+}
+.signup-bg {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 10%, rgba(212,32,44,0.08), transparent),
+    radial-gradient(ellipse 50% 50% at 80% 80%, rgba(51,102,255,0.06), transparent),
+    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(201,162,77,0.04), transparent);
+}
+
+/* Top bar */
+.signup-topbar {
+  width: 100%; max-width: 720px; padding: 20px 24px;
+  display: flex; justify-content: space-between; align-items: center;
+  position: relative; z-index: 10;
+}
+.signup-logo {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; color: white;
+}
+.signup-logo-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: var(--red);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Archivo Black', sans-serif; font-size: 16px; color: white;
+}
+.signup-logo span {
+  font-family: 'Archivo Black', sans-serif; font-size: 15px; letter-spacing: 0.3px;
+}
+.signup-back {
+  color: rgba(255,255,255,0.4); text-decoration: none;
+  font-size: 13px; font-weight: 500; transition: color 0.2s;
+}
+.signup-back:hover { color: white; }
+
+/* Container */
+.signup-container {
+  position: relative; z-index: 10;
+  width: 100%; max-width: 680px;
+  padding: 0 24px 60px;
+  animation: fadeUp 0.6s ease-out both;
+}
+
+/* Progress bar */
+.signup-progress {
+  display: flex; align-items: center;
+  margin-bottom: 36px; padding: 0 8px;
+}
+.signup-progress-step {
+  display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+}
+.signup-dot {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 2px solid rgba(255,255,255,0.12);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800; color: rgba(255,255,255,0.3);
+  transition: all 0.4s ease;
+}
+.signup-dot.active {
+  background: var(--red); border-color: var(--red); color: white;
+  box-shadow: 0 0 20px rgba(212,32,44,0.3);
+}
+.signup-dot.done {
+  background: rgba(212,32,44,0.15); border-color: rgba(212,32,44,0.3); color: var(--red-glow);
+}
+.signup-step-label {
+  font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.25);
+  text-transform: uppercase; letter-spacing: 0.08em; transition: color 0.3s;
+}
+.signup-step-label.active { color: rgba(255,255,255,0.7); }
+.signup-step-label.done { color: rgba(255,255,255,0.4); }
+.signup-line {
+  flex: 1; height: 2px; background: rgba(255,255,255,0.06);
+  margin: 0 8px; position: relative; overflow: hidden; min-width: 20px;
+}
+.signup-line-fill {
+  position: absolute; inset: 0; background: var(--red);
+  transform: scaleX(0); transform-origin: left; transition: transform 0.5s ease;
+}
+.signup-line-fill.filled { transform: scaleX(1); }
+
+/* Card */
+.signup-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 28px; padding: 44px 40px;
+  backdrop-filter: blur(20px);
+  position: relative; overflow: hidden;
+}
+.signup-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+}
+
+/* Step content animation */
+.signup-step-content { animation: fadeUp 0.4s ease-out both; }
+
+/* Titles */
+.signup-title {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 28px; color: white; margin-bottom: 6px;
+}
+.signup-desc {
+  font-size: 14px; color: rgba(255,255,255,0.4);
+  margin-bottom: 32px; line-height: 1.5;
+}
+.signup-desc strong { color: rgba(255,255,255,0.7); }
+
+/* Plan options */
+.plan-options { display: flex; flex-direction: column; gap: 14px; }
+.plan-option {
+  display: flex; align-items: center; gap: 18px;
+  padding: 20px 24px; border-radius: 18px;
+  background: rgba(255,255,255,0.02);
+  border: 2px solid rgba(255,255,255,0.06);
+  cursor: pointer; transition: all 0.3s ease;
+  position: relative;
+}
+.plan-option:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.12); }
+.plan-option.selected {
+  border-color: var(--gold); background: rgba(201,162,77,0.04);
+  box-shadow: 0 0 40px rgba(201,162,77,0.06);
+}
+.plan-radio {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all 0.3s;
+}
+.plan-option.selected .plan-radio { border-color: var(--gold); }
+.plan-radio-dot {
+  width: 10px; height: 10px; border-radius: 50%; background: var(--gold);
+  opacity: 0; transform: scale(0.5); transition: all 0.25s ease;
+}
+.plan-option.selected .plan-radio-dot { opacity: 1; transform: scale(1); }
+.plan-info { flex: 1; }
+.plan-name { font-size: 16px; font-weight: 800; color: white; margin-bottom: 2px; }
+.plan-detail { font-size: 13px; color: rgba(255,255,255,0.35); }
+.plan-price-col { text-align: right; flex-shrink: 0; }
+.plan-price-main { font-family: 'Archivo Black', sans-serif; font-size: 28px; color: white; line-height: 1; }
+.plan-price-period { font-size: 12px; color: rgba(255,255,255,0.3); }
+.plan-badge-tag {
+  position: absolute; top: -1px; right: 20px;
+  padding: 4px 14px; background: var(--gold);
+  font-size: 10px; font-weight: 800; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--navy);
+  border-radius: 0 0 10px 10px;
+}
+
+/* Promo note */
+.promo-note-box {
+  margin-top: 18px; padding: 14px 18px;
+  background: rgba(201,162,77,0.06);
+  border: 1px solid rgba(201,162,77,0.12);
+  border-radius: 12px;
+  display: flex; align-items: center; gap: 10px;
+}
+.promo-note-box span { font-size: 18px; }
+.promo-note-box p { font-size: 13px; color: rgba(255,255,255,0.4); }
+.promo-note-box strong { color: var(--gold-light); }
+
+/* Form fields */
+.field-group { margin-bottom: 20px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.signup-label {
+  display: block; font-size: 12px; font-weight: 700;
+  color: rgba(255,255,255,0.5); letter-spacing: 0.04em;
+  text-transform: uppercase; margin-bottom: 8px;
+}
+.signup-input {
+  width: 100%; padding: 15px 18px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px; color: white;
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px; font-weight: 500;
+  transition: all 0.25s ease; outline: none;
+}
+.signup-input::placeholder { color: rgba(255,255,255,0.2); }
+.signup-input:focus {
+  border-color: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.06);
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.04);
+}
+select.signup-input {
+  appearance: none; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='rgba(255,255,255,0.3)' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 40px;
+}
+select.signup-input option { background: var(--navy); color: white; }
+
+/* Vehicle type cards */
+.vehicle-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 22px; }
+.v-type-card {
+  padding: 18px 14px; border-radius: 14px;
+  background: rgba(255,255,255,0.02);
+  border: 2px solid rgba(255,255,255,0.06);
+  text-align: center; cursor: pointer;
+  transition: all 0.3s ease;
+}
+.v-type-card:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.12); }
+.v-type-card.selected { border-color: var(--gold); background: rgba(201,162,77,0.05); }
+.v-type-icon { font-size: 28px; margin-bottom: 6px; }
+.v-type-name { font-size: 13px; font-weight: 700; color: white; }
+.v-type-price { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 2px; }
+.v-type-price.highlight { color: var(--gold); }
+
+/* Card visual */
+.card-visual {
+  width: 100%; padding: 28px 24px 20px;
+  background: linear-gradient(135deg, var(--gray-900) 0%, #1a1a2e 50%, var(--navy) 100%);
+  border-radius: 16px; margin-bottom: 28px;
+  border: 1px solid rgba(255,255,255,0.06);
+  position: relative; overflow: hidden;
+}
+.card-visual::before {
+  content: ''; position: absolute;
+  top: -50%; right: -20%;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(201,162,77,0.08), transparent);
+  border-radius: 50%;
+}
+.card-chip {
+  width: 36px; height: 26px; border-radius: 5px;
+  background: linear-gradient(135deg, var(--gold), #8B7A3E);
+  margin-bottom: 20px; opacity: 0.7;
+}
+.card-number-display {
+  font-family: 'Outfit', sans-serif;
+  font-size: 20px; font-weight: 300;
+  color: rgba(255,255,255,0.6); letter-spacing: 3px;
+  margin-bottom: 18px;
+}
+.card-bottom-row { display: flex; justify-content: space-between; }
+.card-meta-label { font-size: 9px; color: rgba(255,255,255,0.2); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px; }
+.card-meta-value { font-size: 13px; color: rgba(255,255,255,0.5); font-weight: 500; }
+.card-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* Summary */
+.summary-box {
+  margin-top: 28px; padding: 22px 24px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+}
+.summary-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0;
+}
+.summary-row span { font-size: 14px; color: rgba(255,255,255,0.4); }
+.summary-row strong { font-size: 14px; color: white; font-weight: 700; }
+.summary-divider {
+  border: none; height: 1px;
+  background: rgba(255,255,255,0.06); margin: 10px 0;
+}
+.summary-total-row span { color: rgba(255,255,255,0.6); font-weight: 600; }
+.summary-total-row strong {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 22px; color: var(--gold-light);
+}
+.summary-savings {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 12px; padding: 10px 14px;
+  background: rgba(76,175,80,0.08);
+  border-radius: 10px;
+}
+.summary-savings span { font-size: 12px; color: #81C784; font-weight: 600; }
+
+/* Confirmation */
+.confirm-wrap { text-align: center; padding: 20px 0; }
+.confirm-icon {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: rgba(76,175,80,0.1);
+  border: 2px solid rgba(76,175,80,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px; color: #81C784;
+  margin: 0 auto 24px;
+  animation: popIn 0.5s cubic-bezier(0.16,1,0.3,1) both;
+}
+@keyframes popIn {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.confirm-title {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 32px; color: white; margin-bottom: 8px;
+}
+.confirm-sub { font-size: 15px; color: rgba(255,255,255,0.4); margin-bottom: 32px; line-height: 1.6; }
+.confirm-details {
+  padding: 24px; border-radius: 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  text-align: left; margin-bottom: 28px;
+}
+.confirm-details h4 {
+  font-size: 12px; font-weight: 800; color: rgba(255,255,255,0.3);
+  text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px;
+}
+.confirm-row {
+  display: flex; justify-content: space-between;
+  padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.confirm-row:last-child { border-bottom: none; }
+.confirm-row span { font-size: 14px; color: rgba(255,255,255,0.35); }
+.confirm-row strong { font-size: 14px; color: white; font-weight: 600; }
+.gold-text { color: var(--gold-light) !important; }
+
+/* Buttons */
+.signup-btns { display: flex; gap: 12px; margin-top: 32px; }
+.signup-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 8px; padding: 16px 32px; border-radius: 14px;
+  font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700;
+  border: none; cursor: pointer; transition: all 0.3s ease;
+  text-decoration: none; position: relative; overflow: hidden;
+}
+.signup-btn::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.12), transparent);
+  transform: translateX(-100%); transition: transform 0.5s ease;
+}
+.signup-btn:hover::after { transform: translateX(100%); }
+.signup-btn.primary {
+  background: var(--red); color: white; flex: 1;
+  box-shadow: 0 6px 28px rgba(212,32,44,0.3);
+}
+.signup-btn.primary:hover { background: var(--red-glow); transform: translateY(-2px); box-shadow: 0 10px 36px rgba(212,32,44,0.4); }
+.signup-btn.gold {
+  background: var(--gold); color: var(--navy); flex: 1;
+  box-shadow: 0 6px 28px rgba(201,162,77,0.25);
+}
+.signup-btn.gold:hover { background: var(--gold-light); transform: translateY(-2px); }
+.signup-btn.ghost {
+  background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.5);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.signup-btn.ghost:hover { background: rgba(255,255,255,0.08); color: white; }
+
+/* Secure note */
+.secure-note {
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px; margin-top: 18px;
+}
+.secure-note span { font-size: 12px; color: rgba(255,255,255,0.2); }
+
+/* Signup responsive */
+@media (max-width: 640px) {
+  .signup-card { padding: 32px 24px; border-radius: 22px; }
+  .signup-title { font-size: 24px; }
+  .vehicle-types { grid-template-columns: 1fr; }
+  .field-row { grid-template-columns: 1fr; }
+  .card-fields { grid-template-columns: 1fr; }
+  .card-fields .field-group[style*="span 2"] { grid-column: span 1; }
+  .signup-step-label { display: none; }
+  .plan-price-main { font-size: 22px; }
 }

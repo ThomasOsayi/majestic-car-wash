@@ -1,3 +1,5 @@
+import RevealOnScroll from "./RevealOnScroll";
+
 const services = [
   {
     title: "Exterior Hand Wash",
@@ -41,7 +43,7 @@ export default function Services() {
   return (
     <section className="services" id="services">
       <div className="section-inner">
-        <div className="reveal">
+        <RevealOnScroll>
           <div className="section-label">Services</div>
           <div className="section-title">
             From Quick Wash
@@ -52,10 +54,10 @@ export default function Services() {
             Every wash is done by hand. Choose the level of care your vehicle
             needs — and leave the rest to us.
           </p>
-        </div>
+        </RevealOnScroll>
         <div className="services-grid">
-          {services.map((svc) => (
-            <div className="svc-card reveal" key={svc.title}>
+          {services.map((svc, i) => (
+            <RevealOnScroll className="svc-card" delay={i * 100} key={svc.title}>
               <div className="svc-card-img">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={svc.img} alt={svc.title} />
@@ -65,7 +67,7 @@ export default function Services() {
                 <p>{svc.desc}</p>
                 <div className="svc-price-tag">{svc.price}</div>
               </div>
-            </div>
+            </RevealOnScroll>
           ))}
         </div>
       </div>

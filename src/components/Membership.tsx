@@ -1,3 +1,5 @@
+import RevealOnScroll from "./RevealOnScroll";
+
 const plans = [
   {
     tier: "Essential",
@@ -15,6 +17,7 @@ const plans = [
     ],
     btnClass: "btn-tier-outline",
     btnText: "Get Essential",
+    slug: "essential",
   },
   {
     tier: "Premium",
@@ -34,6 +37,7 @@ const plans = [
     ],
     btnClass: "btn-tier-gold",
     btnText: "Get Premium",
+    slug: "premium",
   },
   {
     tier: "Ultimate",
@@ -52,6 +56,7 @@ const plans = [
     ],
     btnClass: "btn-tier-red",
     btnText: "Get Ultimate",
+    slug: "ultimate",
   },
 ];
 
@@ -63,7 +68,7 @@ export default function Membership() {
         <img src="https://images.unsplash.com/photo-1542362567-b07e54358753?w=1800&q=80" alt="" />
       </div>
       <div className="section-inner">
-        <div className="reveal">
+        <RevealOnScroll>
           <div className="section-label">Unlimited Memberships</div>
           <div className="section-title">
             Wash Anytime.
@@ -74,12 +79,13 @@ export default function Membership() {
             Join the club and wash your car as often as you want. No limits, no
             contracts, cancel anytime.
           </p>
-        </div>
+        </RevealOnScroll>
 
         <div className="pricing-grid">
-          {plans.map((plan) => (
-            <div
-              className={`p-card reveal${plan.featured ? " featured" : ""}`}
+          {plans.map((plan, i) => (
+            <RevealOnScroll
+              className={`p-card${plan.featured ? " featured" : ""}`}
+              delay={i * 150}
               key={plan.tier}
             >
               {plan.featured && <div className="p-popular">Most Popular</div>}
@@ -97,17 +103,20 @@ export default function Membership() {
                   </li>
                 ))}
               </ul>
-              <a href="#" className={`btn btn-tier ${plan.btnClass}`}>
+              <a
+                href={`/signup?plan=${plan.slug}`}
+                className={`btn btn-tier ${plan.btnClass}`}
+              >
                 {plan.btnText}
               </a>
-            </div>
+            </RevealOnScroll>
           ))}
         </div>
 
-        <div className="promo-strip reveal">
+        <RevealOnScroll className="promo-strip" delay={200}>
           <h4>🎉 First Month Just $14.99 on Any Plan</h4>
           <p>New members only. No contracts, cancel anytime. +$5/mo for SUV &amp; minivan.</p>
-        </div>
+        </RevealOnScroll>
       </div>
     </section>
   );
