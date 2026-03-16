@@ -20,22 +20,36 @@ majestic-car-wash/
 │   │   ├── globals.css
 │   │   ├── layout.tsx
 │   │   ├── page.tsx
-│   │   └── signup/
+│   │   ├── signup/
+│   │   │   └── page.tsx
+│   │   ├── login/
+│   │   │   └── page.tsx
+│   │   ├── member/
+│   │   │   └── page.tsx
+│   │   ├── admin/
+│   │   │   └── page.tsx
+│   │   ├── staff-login/
+│   │   │   └── page.tsx
+│   │   ├── terms/
+│   │   │   └── page.tsx
+│   │   └── privacy/
 │   │       └── page.tsx
-│   └── components/
-│       ├── About.tsx
-│       ├── CtaBand.tsx
-│       ├── Footer.tsx
-│       ├── Gallery.tsx
-│       ├── Hero.tsx
-│       ├── Location.tsx
-│       ├── Marquee.tsx
-│       ├── Membership.tsx
-│       ├── Navbar.tsx
-│       ├── RevealOnScroll.tsx
-│       ├── Reviews.tsx
-│       ├── Services.tsx
-│       └── (no ScrollToTopOnLoad in src — build may reference cached artifact)
+│   ├── components/
+│   │   ├── About.tsx
+│   │   ├── CtaBand.tsx
+│   │   ├── Footer.tsx
+│   │   ├── Gallery.tsx
+│   │   ├── Hero.tsx
+│   │   ├── Location.tsx
+│   │   ├── Marquee.tsx
+│   │   ├── Membership.tsx
+│   │   ├── Navbar.tsx
+│   │   ├── RevealOnScroll.tsx
+│   │   ├── Reviews.tsx
+│   │   └── Services.tsx
+│   └── lib/
+│       ├── firebase.ts
+│       └── firestore.ts
 ├── .gitignore
 ├── eslint.config.mjs
 ├── next-env.d.ts
@@ -78,7 +92,13 @@ majestic-car-wash/
 | Route | File | Summary |
 |-------|------|--------|
 | `/` | `src/app/page.tsx` | Single-page marketing site with all sections and smooth scroll anchors. |
-| `/signup` | `src/app/signup/page.tsx` | Multi-step membership signup (plan → vehicle → info → payment). |
+| `/signup` | `src/app/signup/page.tsx` | Multi-step membership signup (plan → vehicle → info → payment) that creates a member record in Firestore and sets pricing/status metadata. |
+| `/login` | `src/app/login/page.tsx` | Member login by phone or email; looks up an existing member in Firestore and stores `memberId` in `localStorage`, then routes to `/member`. |
+| `/member` | `src/app/member/page.tsx` | Member dashboard: shows QR code, membership status, billing info, vehicle, visit history, monthly wash count, estimated savings, and pause/cancel/reactivate controls (backed by Firestore). |
+| `/staff-login` | `src/app/staff-login/page.tsx` | Simple 4-digit PIN screen for staff; currently routes to `/admin` on any 4-digit PIN (placeholder auth). |
+| `/admin` | `src/app/admin/page.tsx` | Staff dashboard: daily stats, recent check-ins, quick actions, member check-in/lookup by plate/name/phone, and full members table with visit counts — all powered by Firestore queries. |
+| `/terms` | `src/app/terms/page.tsx` | Terms of Service page describing membership agreement, billing, cancellation, usage, liability, and other legal sections. |
+| `/privacy` | `src/app/privacy/page.tsx` | Privacy Policy page explaining data collection, usage, SMS, security, visit history, cookies/analytics, and user rights. |
 
 ---
 
@@ -117,13 +137,34 @@ majestic-car-wash/
 - **Vehicle step:** Vehicle type (Sedan / SUV / Minivan) with +$5 for SUV/van; make/model: type-ahead make search (e.g. Tesla, BMW) with “Popular in Beverly Grove” vs “All Brands”, then model chips; color, plate.
 - **Info step:** First name, last name, email, phone.
 - **Payment step:** Card number (masked display, 4-group formatting), expiry (MM/YY), CVC; summary with plan, monthly total, next charge date, “Start membership” submit.
-- **UI:** Top bar (logo + “Back to site”), step progress indicator, single card layout; form state and validation handled in component (no backend).
+- **Persistence:** On successful “Start membership”, a new member document is created in Firestore with plan, pricing, status, vehicle, and billing metadata; the generated `memberId` is stored in `localStorage` for use by `/member`.
+- **UI:** Top bar (logo + “Back to site”), step progress indicator, single card layout.
+
+---
+
+### Member login & dashboard (`/login`, `/member`)
+
+- **Login options:** Phone or email tabs; each looks up a member via Firestore helpers (`getMemberByPhone`, `getMemberByEmail`).
+- **Session storage:** On success, `memberId` is saved in `localStorage` and the user is redirected to `/member`; missing/invalid IDs redirect back to `/login`.
+- **Dashboard content:** Shows scannable QR code (generated with `qrcode` and encoded as `MCW:{memberId}`), membership status and billing (plan, monthly price, next billing, member since), vehicle details, recent visit history, monthly wash count, and estimated savings vs retail pricing.
+- **Membership management:** Buttons to pause, reactivate, and cancel membership, all calling Firestore helpers (e.g. `updateMemberStatus`) and updating local state.
+
+---
+
+### Staff tools (`/staff-login`, `/admin`)
+
+- **Staff login:** 4-digit PIN UI with auto-advance and basic keyboard handling; currently any non-empty 4-digit PIN navigates to `/admin` (auth placeholder).
+- **Admin dashboard:** Top nav with date and staff identity; cards showing “Washes Today”, “Active Members”, “Monthly MRR”, and “Member Washes Today`, fed by `getDashboardStats` and `getTodaysVisits`.
+- **Recent check-ins:** List of today’s visits (time, initials, name, vehicle, plan) using Firestore `Visit` data.
+- **Quick actions:** Buttons for scanning QR (placeholder), manual lookup, logging walk-in washes (UI only), and jumping to the members table.
+- **Member check-in view:** Search by plate/name/phone with debounced Firestore-backed `searchMembers`; select a member to see full profile (plan, billing, contact, vehicle, “member for” duration) and log a visit via `logVisit`, updating visit counts and dashboard stats.
+- **Members table:** Pageless table of all members (`getAllMembers`, `getAllVisitCounts`) with plan badges, monthly price, “member for” duration, total visits, and status indicator.
 
 ---
 
 ### Data and content
 
-- **Copy:** All content is in-component (no CMS). Services, membership tiers, reviews, location, and signup plans are defined in the respective components or `signup/page.tsx`.
+- **Copy:** All marketing, legal, and UI copy is in-component (no CMS). Services, membership tiers, reviews, location, legal text, and signup plans are defined in their respective components/pages.
 - **Images:** Unsplash URLs (cars, detailing) and placeholder avatars; favicon in `src/app/favicon.ico`.
 - **Maps:** Google Maps embed URL in `Location.tsx` (Beverly Grove).
 
@@ -144,12 +185,24 @@ majestic-car-wash/
 
 ---
 
+### Backend & data layer (Firebase / Firestore)
+
+- **Firebase app:** `src/lib/firebase.ts` initializes a single Firebase app using env vars (`NEXT_PUBLIC_FIREBASE_*`) and exports a shared Firestore `db` instance.
+- **Members & visits collection:** `src/lib/firestore.ts` defines `Member` and `Visit` types and wraps all Firestore access.
+- **Member operations:** Create member on signup, get member by ID, list all members, search members in-memory, update member fields/status/vehicle/plan, delete member, and count active members.
+- **Visit / check-in operations:** Log check-in visit, get visits for a member, fetch recent/today’s visits, compute per-member monthly visit counts, load dashboard stats (active members, today’s washes, member washes, MRR), and get all visit counts for the admin table.
+- **Lookup helpers:** `getMemberByPhone` / `getMemberByEmail` / `getMemberByPlate` power the login and admin flows.
+
+---
+
 ## Not implemented (or placeholder)
 
 - **Footer:** Markup only; no links, social, or legal copy.
-- **Backend:** No API routes, DB, or auth; signup is front-end only.
-- **Payments:** Card fields are UI only; no Stripe or other processor.
-- **ScrollToTopOnLoad:** Referenced in build output but not present under `src/` (likely legacy/cache).
+- **Auth security:** Staff login uses a dummy 4-digit PIN flow with no real authentication; member auth is by phone/email lookup only (no passwords/OTP yet).
+- **API routes:** No dedicated Next.js API routes; all Firestore access is from client components.
+- **Payments:** Card fields are UI only; Stripe is mentioned in legal copy but not yet wired up in code.
+- **QR scanning:** “Scan QR Code” flows in admin are UI placeholders; no camera/QR integration yet.
+- **ScrollToTopOnLoad:** Still no dedicated component; scroll restoration handled via inline script in `layout.tsx`.
 
 ---
 

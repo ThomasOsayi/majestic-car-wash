@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import {
   getAllMembers,
@@ -8,6 +8,7 @@ import {
   getDashboardStats,
   getTodaysVisits,
   logVisit,
+  getMember,
   getMonthlyVisitCount,
   getAllVisitCounts,
   type Member,
@@ -40,17 +41,14 @@ function getMemberDuration(memberSince: string): string {
   if (!memberSince) return "—";
   const parts = memberSince.split(" ");
   if (parts.length < 2) return memberSince;
-
   const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   const monthIndex = monthNames.indexOf(parts[0]);
   const year = parseInt(parts[1]);
   if (monthIndex === -1 || isNaN(year)) return memberSince;
-
   const joinDate = new Date(year, monthIndex, 1);
   const now = new Date();
   const diffMs = now.getTime() - joinDate.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
   if (diffDays < 1) return "Today";
   if (diffDays < 30) return `${diffDays}d`;
   const diffMonths = Math.floor(diffDays / 30);
@@ -77,6 +75,12 @@ export default function AdminPage() {
   const [lookupVisitCount, setLookupVisitCount] = useState(0);
   const [checkingIn, setCheckingIn] = useState(false);
   const [checkedIn, setCheckedIn] = useState(false);
+
+  // QR Scanner state
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [scanError, setScanError] = useState("");
+  const scannerRef = useRef<HTMLDivElement>(null);
+  const html5ScannerRef = useRef<any>(null);
 
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long", month: "short", day: "numeric", year: "numeric",
@@ -107,6 +111,7 @@ export default function AdminPage() {
     init();
   }, [loadDashboard, loadMembers]);
 
+  // Lookup search
   useEffect(() => {
     if (lookupQuery.length < 2) { setLookupResults([]); setLookupMember(null); return; }
     const timer = setTimeout(async () => {
@@ -117,6 +122,15 @@ export default function AdminPage() {
     }, 300);
     return () => clearTimeout(timer);
   }, [lookupQuery]);
+
+  // Cleanup scanner on unmount or view change
+  useEffect(() => {
+    return () => { stopScanner(); };
+  }, []);
+
+  useEffect(() => {
+    if (view !== "lookup") stopScanner();
+  }, [view]);
 
   async function selectLookupMember(member: Member) {
     setLookupMember(member);
@@ -146,6 +160,75 @@ export default function AdminPage() {
       console.error("Check-in failed:", err);
       alert("Check-in failed. Please try again.");
     } finally { setCheckingIn(false); }
+  }
+
+  /* ===== QR SCANNER ===== */
+  async function startScanner() {
+    setScanError("");
+    setScannerOpen(true);
+    setLookupMember(null);
+    setLookupResults([]);
+    setLookupQuery("");
+    setCheckedIn(false);
+
+    // Wait for DOM element to render
+    await new Promise((r) => setTimeout(r, 100));
+
+    try {
+      const { Html5Qrcode } = await import("html5-qrcode");
+
+      if (html5ScannerRef.current) {
+        try { await html5ScannerRef.current.stop(); } catch { /* already stopped */ }
+      }
+
+      const scanner = new Html5Qrcode("qr-reader");
+      html5ScannerRef.current = scanner;
+
+      await scanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
+        async (decodedText: string) => {
+          // Stop scanner immediately on successful scan
+          try { await scanner.stop(); } catch { /* ignore */ }
+          setScannerOpen(false);
+          html5ScannerRef.current = null;
+
+          // Parse MCW:{memberId} format
+          const memberId = decodedText.startsWith("MCW:") ? decodedText.slice(4) : decodedText;
+
+          try {
+            const member = await getMember(memberId);
+            if (member) {
+              await selectLookupMember(member);
+            } else {
+              setScanError("No member found for this QR code.");
+            }
+          } catch (err) {
+            console.error("QR lookup failed:", err);
+            setScanError("Failed to look up member. Please try again.");
+          }
+        },
+        () => { /* ignore scan failures (no QR in frame) */ }
+      );
+    } catch (err: any) {
+      console.error("Scanner error:", err);
+      setScannerOpen(false);
+      if (err?.message?.includes("NotAllowedError") || err?.name === "NotAllowedError") {
+        setScanError("Camera access denied. Please allow camera permissions and try again.");
+      } else if (err?.message?.includes("NotFoundError") || err?.name === "NotFoundError") {
+        setScanError("No camera found on this device.");
+      } else {
+        setScanError("Could not start camera. Try the manual search instead.");
+      }
+    }
+  }
+
+  async function stopScanner() {
+    if (html5ScannerRef.current) {
+      try { await html5ScannerRef.current.stop(); } catch { /* ignore */ }
+      html5ScannerRef.current = null;
+    }
+    setScannerOpen(false);
   }
 
   const filteredMembers = memberSearch
@@ -248,7 +331,7 @@ export default function AdminPage() {
               <div className="adm-card">
                 <div className="adm-card-header"><div className="adm-card-title">Quick Actions</div></div>
                 <div className="adm-quick-actions">
-                  <button className="adm-quick-btn" onClick={() => setView("lookup")}>
+                  <button className="adm-quick-btn" onClick={() => { setView("lookup"); setTimeout(startScanner, 200); }}>
                     <div className="adm-qb-icon adm-si-red">📷</div>
                     <div className="adm-qb-text"><div className="adm-qb-title">Scan QR Code</div><div className="adm-qb-sub">Verify member at check-in</div></div>
                     <div className="adm-qb-arrow">→</div>
@@ -282,12 +365,27 @@ export default function AdminPage() {
               <p>Scan a QR code or search to verify membership.</p>
             </div>
 
-            <button className="adm-scan-btn">📷 &nbsp;Scan QR Code</button>
+            {/* QR Scanner */}
+            {scannerOpen ? (
+              <div className="qr-scanner-wrap">
+                <div className="qr-scanner-viewport">
+                  <div id="qr-reader" ref={scannerRef} />
+                </div>
+                <button className="qr-scanner-close" onClick={stopScanner}>✕ Close Camera</button>
+              </div>
+            ) : (
+              <button className="adm-scan-btn" onClick={startScanner}>📷 &nbsp;Scan QR Code</button>
+            )}
+
+            {scanError && (
+              <div className="qr-scan-error">{scanError}</div>
+            )}
+
             <div className="adm-lookup-or">or search manually</div>
 
             <div className="adm-lookup-search-wrap">
               <div className="adm-lookup-search-icon">🔍</div>
-              <input type="text" className="adm-lookup-search" placeholder="Plate, name, or phone number..." value={lookupQuery} onChange={(e) => { setLookupQuery(e.target.value); setCheckedIn(false); }} />
+              <input type="text" className="adm-lookup-search" placeholder="Plate, name, or phone number..." value={lookupQuery} onChange={(e) => { setLookupQuery(e.target.value); setCheckedIn(false); setScanError(""); }} />
             </div>
             <div className="adm-lookup-hint">
               {lookupResults.length > 1 ? `${lookupResults.length} members found — refine your search` : "Search by plate number, name, or phone"}
@@ -311,10 +409,19 @@ export default function AdminPage() {
             {lookupMember && (
               <div className="adm-lookup-result">
                 <div className="adm-result-card">
-                  <div className="adm-result-status">
-                    <div className="adm-result-status-left">
-                      <div className="adm-result-status-dot" />
-                      {lookupMember.status === "active" ? "Active Membership" : lookupMember.status === "paused" ? "Paused" : "Cancelled"}
+                  <div className="adm-result-status" style={
+                    lookupMember.status === "paused" ? { background: "#FFFBEB" } :
+                    lookupMember.status === "cancelled" ? { background: "#FEF0F0" } : {}
+                  }>
+                    <div className="adm-result-status-left" style={
+                      lookupMember.status === "paused" ? { color: "#F59E0B" } :
+                      lookupMember.status === "cancelled" ? { color: "#D4202C" } : {}
+                    }>
+                      <div className="adm-result-status-dot" style={
+                        lookupMember.status === "paused" ? { background: "#F59E0B", animation: "none" } :
+                        lookupMember.status === "cancelled" ? { background: "#D4202C", animation: "none" } : {}
+                      } />
+                      {lookupMember.status === "active" ? "Active Membership" : lookupMember.status === "paused" ? "⏸ Membership Paused" : "Membership Cancelled"}
                     </div>
                     <div className={`adm-result-plan-badge ${PLAN_CLASS[lookupMember.plan]}`}>
                       {lookupMember.plan === "premium" ? "⭐ " : ""}{PLAN_LABEL[lookupMember.plan]}
@@ -348,12 +455,19 @@ export default function AdminPage() {
                     <div className="adm-result-actions">
                       {checkedIn ? (
                         <button className="adm-ra-btn adm-ra-green" disabled style={{ opacity: 0.7 }}>✓ Checked In — {getServiceType(lookupMember.plan)}</button>
+                      ) : lookupMember.status !== "active" ? (
+                        <button className="adm-ra-btn" style={{ background: "#F5F5F5", color: "#9CA3AF", cursor: "not-allowed" }} disabled>
+                          {lookupMember.status === "paused" ? "⏸ Membership Paused — Cannot Check In" : "Membership Cancelled"}
+                        </button>
                       ) : (
-                        <button className="adm-ra-btn adm-ra-green" onClick={handleCheckIn} disabled={checkingIn || lookupMember.status !== "active"}
-                          style={checkingIn ? { opacity: 0.6 } : lookupMember.status !== "active" ? { opacity: 0.4, cursor: "not-allowed" } : {}}>
-                          {checkingIn ? "Checking in..." : lookupMember.status !== "active" ? `Membership ${lookupMember.status}` : `✓ Check In — ${getServiceType(lookupMember.plan)}`}
+                        <button className="adm-ra-btn adm-ra-green" onClick={handleCheckIn} disabled={checkingIn}
+                          style={checkingIn ? { opacity: 0.6 } : {}}>
+                          {checkingIn ? "Checking in..." : `✓ Check In — ${getServiceType(lookupMember.plan)}`}
                         </button>
                       )}
+                      <button className="adm-ra-btn adm-ra-outline" onClick={() => { setLookupMember(null); setCheckedIn(false); setScanError(""); }}>
+                        ← Scan Another
+                      </button>
                     </div>
                   </div>
                 </div>

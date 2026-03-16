@@ -190,6 +190,7 @@ function SignupForm() {
       });
 
       setMemberId(id);
+      localStorage.setItem("memberId", id);
       setStep(5);
     } catch (error) {
       console.error("Failed to create member:", error);

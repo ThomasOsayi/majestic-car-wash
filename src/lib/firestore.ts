@@ -232,3 +232,29 @@ export async function getAllVisitCounts(): Promise<Record<string, number>> {
   });
   return counts;
 }
+
+/** Look up member by phone number */
+export async function getMemberByPhone(phone: string): Promise<Member | null> {
+  const digits = phone.replace(/\D/g, "");
+  const snap = await getDocs(query(membersRef, where("phone", "==", digits)));
+  if (!snap.empty) {
+    const d = snap.docs[0];
+    return { id: d.id, ...d.data() } as Member;
+  }
+  const snap2 = await getDocs(query(membersRef, where("phone", "==", phone)));
+  if (!snap2.empty) {
+    const d = snap2.docs[0];
+    return { id: d.id, ...d.data() } as Member;
+  }
+  return null;
+}
+
+/** Look up member by email */
+export async function getMemberByEmail(email: string): Promise<Member | null> {
+  const snap = await getDocs(
+    query(membersRef, where("email", "==", email.toLowerCase().trim()))
+  );
+  if (snap.empty) return null;
+  const d = snap.docs[0];
+  return { id: d.id, ...d.data() } as Member;
+}
