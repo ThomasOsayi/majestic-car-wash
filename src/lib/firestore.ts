@@ -36,6 +36,7 @@ import {
     nextBilling: string;
     stripeCustomerId?: string;
     stripeSubscriptionId?: string;
+    billingInterval?: "monthly" | "annual";
     authUid?: string;
     createdAt?: Timestamp;
   }
@@ -240,4 +241,15 @@ import {
       }
     });
     return counts;
+  }
+
+  /** Get total visit count for the current month (all members) */
+  export async function getMonthlyTotalVisits(): Promise<number> {
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    const snap = await getDocs(
+      query(visitsRef, where("date", ">=", Timestamp.fromDate(startOfMonth)))
+    );
+    return snap.size;
   }
