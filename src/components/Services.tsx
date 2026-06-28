@@ -1,75 +1,134 @@
 import RevealOnScroll from "./RevealOnScroll";
+import { Calendar, StarSolid, Gem } from "./Icons";
 
-const services = [
-  {
-    title: "Exterior Hand Wash",
-    desc: "Full foam bath, hand mitt wash, chamois dry, tire & rim clean, and window wipe.",
-    price: "From $20",
-    img: "https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=700&q=80",
-  },
-  {
-    title: "Full-Service Wash",
-    desc: "Exterior wash plus interior vacuum, dashboard wipe, door jams, and all interior windows.",
-    price: "From $30",
-    img: "https://images.unsplash.com/photo-1507136566006-cfc505b114fc?w=700&q=80",
-  },
-  {
-    title: "Premium Detail",
-    desc: "Clay bar, hand wax, leather conditioning, carpet shampoo, and engine bay cleaning.",
-    price: "From $75",
-    img: "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?w=700&q=80",
-  },
-  {
-    title: "Paint Protection",
-    desc: "Ceramic coating, paint sealant, and UV protection to keep your finish looking showroom-new.",
-    price: "From $150",
-    img: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=700&q=80",
-  },
-  {
-    title: "Interior Deep Clean",
-    desc: "Full shampoo extraction, leather treatment, vent dusting, and odor elimination.",
-    price: "From $60",
-    img: "https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=700&q=80",
-  },
-  {
-    title: "Sap & Stain Removal",
-    desc: "Tree sap, cement splatter, tar, overspray — if it's stuck to your car, we'll safely remove it.",
-    price: "Custom Quote",
-    img: "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=700&q=80",
-  },
+const DETAIL = [
+  { name: "Hand Wash (No Tunnel)", price: "$50", up: true, desc: "Full hand wash, vacuum, wipe all inside, clean all windows, towel-dry exterior, door jams & trunk, wheel brightener, tire shine." },
+  { name: "Super Clean", price: "$69.99", up: true, desc: "Silver wash, clean door panels & seats, extra vacuum, exterior dressing, air freshener, wipe all inside, shampoo floor mats." },
+  { name: "Hand & Wax", price: "$69.99", up: true, desc: "Silver wash, carnauba paste wax, wheel brightener, tire shine." },
+  { name: "Seats or Carpet Shampoo", price: "$120", up: true, desc: "Silver wash, carpet or seat shampoo, 4 mats, tire shine, air freshener." },
+  { name: "Interior Shampoo", price: "$149.99", up: true, desc: "Silver wash, shampoo everything inside (dashboard, doors, seats, trunk & carpet mats), leather treatment, tire shine, air freshener." },
+  { name: "Clay & Wax", price: "$150.99", up: true, desc: "Silver wash, clay oxidation removal & overspray, carnauba wax, tire dressing, air freshener." },
+  { name: "Exterior Detail", price: "$249.99", up: true, desc: "Custom polish, remove oxidation, water spots, tar & overspray, buffing & wax, exterior dressing, wheel brightener." },
+  { name: "Int. & Ext. Package: Complete Detail", price: "$349.99", up: true, desc: "The works, inside and out. Extra for SUVs, minivans, vans & trucks. Mats $3 each & up." },
+];
+
+const ALACARTE = [
+  ["Custom Wash", "$39.99 & up"],
+  ["Rims", "$20.99 & up"],
+  ["Leather Treatment", "$49.00 & up"],
+  ["Interior Dressing", "$30.00"],
+  ["Exterior Dressing", "$15.00"],
+  ["Tire Dressing", "$5.00"],
+  ["Headlights", "$49.99 & up"],
+  ["Floor Mats", "$3.00 each & up"],
 ];
 
 export default function Services() {
   return (
-    <section className="services" id="services">
+    <section className="menu" id="menu">
       <div className="section-inner">
         <RevealOnScroll>
-          <div className="section-label">Services</div>
-          <div className="section-title">
-            From Quick Wash
-            <br />
-            to Full Detail
-          </div>
+          <div className="section-label">The Menu</div>
+          <div className="section-title">Pick Your Wash.<br />Or the Full Detail.</div>
           <p className="section-sub">
-            Every wash is done by hand. Choose the level of care your vehicle
-            needs — and leave the rest to us.
+            Three hand-wash tiers plus a complete detail menu. Every package starts with a
+            100% hand wash.
           </p>
         </RevealOnScroll>
-        <div className="services-grid">
-          {services.map((svc, i) => (
-            <RevealOnScroll className="svc-card" delay={i * 100} key={svc.title}>
-              <div className="svc-card-img">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={svc.img} alt={svc.title} />
+
+        <RevealOnScroll className="menu-sub-label" as="div">Hand Wash Packages</RevealOnScroll>
+        <RevealOnScroll className="wash-grid">
+          <div className="wash-card">
+            <div className="wash-head silver">
+              <h3>SILVER</h3>
+              <div className="wash-tag">The essential hand wash</div>
+              <div className="wash-price">$29.99</div>
+            </div>
+            <div className="wash-body">
+              <ul>
+                <li><span className="wc">✓</span> 100% Hand Wash</li>
+                <li><span className="wc">✓</span> Foaming Presoak</li>
+                <li><span className="wc">✓</span> Spot-Free Rinse</li>
+                <li><span className="wc">✓</span> Vacuum</li>
+                <li><span className="wc">✓</span> Wipe Down Dashboard &amp; Cup Holders</li>
+                <li><span className="wc">✓</span> Clean Windows</li>
+              </ul>
+            </div>
+            <div className="wash-foot">
+              <span className="wash-thursday"><Calendar /> Thursday Special $25.99</span>
+            </div>
+          </div>
+
+          <div className="wash-card">
+            <div className="wash-head gold">
+              <h3>GOLD</h3>
+              <div className="wash-tag">Shine &amp; protection added</div>
+              <div className="wash-price">$34.99</div>
+            </div>
+            <div className="wash-body">
+              <ul>
+                <li><span className="wc">✓</span> Everything in Silver</li>
+                <li><span className="wc">✓</span> Triple Shine (Wax Protection)</li>
+                <li><span className="wc">✓</span> Blazin&apos; Glaze</li>
+                <li><span className="wc">✓</span> Tire Dressing</li>
+                <li><span className="wc">✓</span> Air Freshener</li>
+                <li><span className="wc">✓</span> Turbo Dry</li>
+              </ul>
+            </div>
+            <div className="wash-foot">
+              <span className="wash-thursday" style={{ background: "rgba(212,32,44,0.08)", color: "var(--red)", borderColor: "rgba(212,32,44,0.25)" }}>
+                <StarSolid /> Most popular wash
+              </span>
+            </div>
+          </div>
+
+          <div className="wash-card">
+            <div className="wash-head diamond">
+              <h3>DIAMOND</h3>
+              <div className="wash-tag">The full-protection wash</div>
+              <div className="wash-price">$39.99</div>
+            </div>
+            <div className="wash-body">
+              <ul>
+                <li><span className="wc">✓</span> Everything in Gold</li>
+                <li><span className="wc">✓</span> Fire: Clean &amp; Protect</li>
+                <li><span className="wc">✓</span> Ice: Instant Shine</li>
+                <li><span className="wc">✓</span> Exterior Dressing</li>
+                <li><span className="wc">✓</span> Spot-Free Rinse &amp; Turbo Dry</li>
+              </ul>
+            </div>
+            <div className="wash-foot">
+              <span className="wash-thursday" style={{ background: "rgba(27,63,160,0.08)", color: "var(--blue)", borderColor: "rgba(27,63,160,0.25)" }}>
+                <Gem /> Top-tier protection
+              </span>
+            </div>
+          </div>
+        </RevealOnScroll>
+
+        <RevealOnScroll className="menu-sub-label" as="div">Detailing Services</RevealOnScroll>
+        <RevealOnScroll className="detail-grid">
+          {DETAIL.map((d) => (
+            <div className="detail-row" key={d.name}>
+              <div className="detail-row-top">
+                <h4>{d.name}</h4>
+                <div className="detail-price">{d.price}{d.up && <small> &amp; up</small>}</div>
               </div>
-              <div className="svc-card-body">
-                <h3>{svc.title}</h3>
-                <p>{svc.desc}</p>
-                <div className="svc-price-tag">{svc.price}</div>
-              </div>
-            </RevealOnScroll>
+              <p>{d.desc}</p>
+            </div>
           ))}
-        </div>
+        </RevealOnScroll>
+
+        <RevealOnScroll className="alacarte">
+          <h3>À La Carte</h3>
+          <p className="ac-note">Add any single service to your wash.</p>
+          <div className="ac-list">
+            {ALACARTE.map(([name, price]) => (
+              <div className="ac-item" key={name}>
+                <span>{name}</span><b>{price}</b>
+              </div>
+            ))}
+          </div>
+        </RevealOnScroll>
       </div>
     </section>
   );

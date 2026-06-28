@@ -1,74 +1,35 @@
-"use client";
-
-import { useEffect, useRef } from "react";
+import Link from "next/link";
 
 export default function Hero() {
-  const bgRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (bgRef.current) {
-        const y = window.scrollY;
-        bgRef.current.style.transform = `translateY(${y * 0.35}px) scale(1.1)`;
-      }
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   return (
     <section className="hero">
-      <div className="hero-bg" ref={bgRef}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=1800&q=80"
-          alt="Car being washed"
-        />
+      <div className="hero-bg">
+        <img src="/majestic/detailing-bay.jpg" alt="Crew hand-washing a car at Majestic" />
       </div>
       <div className="hero-content">
         <div className="hero-tag">
-          <span className="dot"></span> Beverly Grove Since 1984 — Family Owned
+          <span className="dot" /> Beverly Grove • Open 7 Days 8AM to 5PM
         </div>
         <h1>
           The <span className="red">Hand Wash</span>
-          <br />
-          Your Car
-          <br />
-          Deserves.
+          <br />Your Car
+          <br />Deserves.
         </h1>
         <p className="hero-desc">
-          <strong>No machines. No shortcuts. No swirl marks.</strong> Real people
-          who care, washing every car by hand for over 40 years. Unlimited
-          memberships starting at $34.99/mo. First month just $14.99.
+          <strong>100% hand wash, hand-finished by our crew every time.</strong> Attention
+          to detail, reduced risk of paint damage, personalized care. Washes from $29.99
+          and complete details done right. One block west of Fairfax.
         </p>
         <div className="hero-btns">
-          <a href="#membership" className="btn btn-red">
-            View Membership Plans →
-          </a>
-          <a href="#services" className="btn btn-glass">
-            Explore Services
-          </a>
+          <Link href="/menu" className="btn btn-red">See the Full Menu →</Link>
+          <Link href="/deals" className="btn btn-glass">Coupons &amp; Specials</Link>
         </div>
         <div className="hero-photo-strip">
-          <div className="hero-thumb">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="https://images.unsplash.com/photo-1601362840469-51e4d8d58785?w=200&q=80" alt="" />
-          </div>
-          <div className="hero-thumb">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=200&q=80" alt="" />
-          </div>
-          <div className="hero-thumb">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?w=200&q=80" alt="" />
-          </div>
-          <div className="hero-thumb">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="https://images.unsplash.com/photo-1542362567-b07e54358753?w=200&q=80" alt="" />
-          </div>
-          <div className="hero-thumb-more">
-            <span>42+</span>Photos
-          </div>
+          <div className="hero-thumb"><img src="/majestic/storefront.jpg" alt="Majestic storefront" /></div>
+          <div className="hero-thumb"><img src="/majestic/wash-menu-sign.jpg" alt="Wash menu sign" /></div>
+          <div className="hero-thumb"><img src="/majestic/service-menu-card.jpg" alt="Service menu" /></div>
+          <div className="hero-thumb"><img src="/majestic/alacarte-board-1.jpg" alt="A la carte board" /></div>
+          <a href="#gallery" className="hero-thumb-more"><span>+</span>Gallery</a>
         </div>
       </div>
     </section>

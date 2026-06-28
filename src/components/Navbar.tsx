@@ -2,37 +2,45 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+const LINKS = [
+  { href: "/", label: "Home" },
+  { href: "/menu", label: "Menu" },
+  { href: "/membership", label: "Membership" },
+  { href: "/deals", label: "Deals" },
+  { href: "/contact", label: "Contact" },
+];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  const scrollTo = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
-    e.preventDefault();
-    document.querySelector(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
 
   return (
     <nav className={`nav${scrolled ? " scrolled" : ""}`}>
       <div className="nav-inner">
-        <a href="#" className="nav-logo" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+        <Link href="/" className="nav-logo">
           <div className="nav-logo-img">M</div>
           <span className="nav-logo-text">Majestic Car Wash</span>
-        </a>
+        </Link>
         <div className="nav-links">
-          <a href="#about" onClick={(e) => scrollTo(e, "#about")}>About</a>
-          <a href="#services" onClick={(e) => scrollTo(e, "#services")}>Services</a>
-          <a href="#membership" onClick={(e) => scrollTo(e, "#membership")}>Membership</a>
-          <a href="#gallery" onClick={(e) => scrollTo(e, "#gallery")}>Gallery</a>
-          <a href="#reviews" onClick={(e) => scrollTo(e, "#reviews")}>Reviews</a>
-          <a href="#location" onClick={(e) => scrollTo(e, "#location")}>Location</a>
-          <Link href="/login" className="nav-member-login">Member Login</Link>
-          <a href="#membership" className="nav-join" onClick={(e) => scrollTo(e, "#membership")}>Join Now</a>
+          {LINKS.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className={pathname === l.href ? "nav-active" : undefined}
+            >
+              {l.label}
+            </Link>
+          ))}
+          <Link href="/membership" className="nav-join">Join Now</Link>
         </div>
       </div>
     </nav>

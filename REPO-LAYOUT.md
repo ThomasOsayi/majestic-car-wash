@@ -1,6 +1,6 @@
 # Majestic Car Wash — Repo Layout & Implementation Summary
 
-A Next.js 16 marketing site for **Majestic Car Wash** (Beverly Grove, LA): hand car wash, detailing, and unlimited memberships. Built with React 19, TypeScript, and Tailwind CSS v4.
+A Next.js 16 full-stack membership app for **Majestic Car Wash** (Beverly Grove, LA): marketing site, Stripe subscriptions, Firebase Auth + Firestore, member dashboard, and staff admin tools. Built with React 19, TypeScript, and Tailwind CSS v4.
 
 ---
 
@@ -21,17 +21,19 @@ majestic-car-wash/
 │   │   ├── layout.tsx
 │   │   ├── page.tsx
 │   │   ├── signup/
-│   │   │   ├── page.tsx
+│   │   │   ├── page.tsx              # Multi-step signup + embedded Stripe Payment Element
 │   │   │   └── success/
-│   │   │       └── page.tsx
+│   │   │       └── page.tsx          # Legacy Checkout redirect success handler
 │   │   ├── api/
+│   │   │   ├── create-subscription/
+│   │   │   │   └── route.ts          # Primary payment flow — Stripe Subscription + clientSecret
 │   │   │   ├── create-checkout-session/
-│   │   │   │   └── route.ts
+│   │   │   │   └── route.ts          # Alternate Stripe Checkout redirect flow
 │   │   │   ├── verify-session/
-│   │   │   │   └── route.ts
+│   │   │   │   └── route.ts          # Verify Checkout session after redirect
 │   │   │   └── webhooks/
 │   │   │       └── stripe/
-│   │   │           └── route.ts
+│   │   │           └── route.ts      # Stripe webhook handler
 │   │   ├── login/
 │   │   │   └── page.tsx
 │   │   ├── member/
@@ -58,8 +60,10 @@ majestic-car-wash/
 │   │   ├── Reviews.tsx
 │   │   └── Services.tsx
 │   └── lib/
-│       ├── firebase.ts
-│       └── firestore.ts
+│       ├── firebase.ts               # Firebase app, Firestore db, Auth
+│       ├── firestore.ts              # Member & visit CRUD + dashboard stats
+│       └── stripe.ts                 # Server + client Stripe helpers
+├── .env.local                        # Firebase, Stripe keys (not committed)
 ├── .gitignore
 ├── eslint.config.mjs
 ├── next-env.d.ts
@@ -68,7 +72,7 @@ majestic-car-wash/
 ├── package.json
 ├── postcss.config.mjs
 ├── README.md
-├── REPO-LAYOUT.md          ← this file
+├── REPO-LAYOUT.md                    ← this file
 └── tsconfig.json
 ```
 
@@ -76,14 +80,20 @@ majestic-car-wash/
 
 ---
 
-## What’s implemented
+## What's implemented
 
 ### Tech stack
 
-- **Framework:** Next.js 16 (App Router)
-- **UI:** React 19, TypeScript
-- **Styling:** Tailwind CSS v4, custom CSS in `globals.css`
-- **Fonts:** Google Fonts — Archivo Black, Outfit, Playfair Display (loaded in `layout.tsx`)
+| Layer | Technology |
+|-------|------------|
+| Framework | Next.js 16 (App Router) |
+| UI | React 19, TypeScript |
+| Styling | Tailwind CSS v4 + custom CSS in `globals.css` |
+| Fonts | Google Fonts — Archivo Black, Outfit, Playfair Display |
+| Database | Firebase Firestore |
+| Auth | Firebase Auth (email/password + phone OTP) |
+| Payments | Stripe Subscriptions via Payment Element (`stripe`, `@stripe/stripe-js`, `@stripe/react-stripe-js`) |
+| QR codes | `qrcode` (member dashboard), `html5-qrcode` (admin scanner) |
 
 ---
 
@@ -91,9 +101,9 @@ majestic-car-wash/
 
 | File | Role |
 |------|------|
-| `src/app/layout.tsx` | Root layout: HTML lang, metadata (title/description), scroll-restoration script, font links, global CSS. |
-| `src/app/globals.css` | Global styles, Tailwind, and component-specific classes (hero, nav, sections, signup, etc.). |
-| `src/app/page.tsx` | Home page: composes Navbar → Hero → Marquee → About → Services → Membership → Gallery → Reviews → Location → CtaBand → Footer. |
+| `src/app/layout.tsx` | Root layout: metadata, scroll-restoration script, font links, global CSS. |
+| `src/app/globals.css` | Global + section styles (marketing, signup, login, member, admin `a2-*`, legal). |
+| `src/app/page.tsx` | Home: Navbar → Hero → Marquee → About → Services → Membership → Gallery → Reviews → Location → CtaBand → Footer. |
 
 ---
 
@@ -101,15 +111,15 @@ majestic-car-wash/
 
 | Route | File | Summary |
 |-------|------|--------|
-| `/` | `src/app/page.tsx` | Single-page marketing site with all sections and smooth scroll anchors. |
-| `/signup` | `src/app/signup/page.tsx` | Multi-step membership signup (plan → vehicle → info → payment) that sends details to `/api/create-checkout-session` and redirects to Stripe Checkout. |
-| `/signup/success` | `src/app/signup/success/page.tsx` | Post-checkout activation page: verifies the Stripe session via `/api/verify-session`, then creates the member in Firestore and stores `memberId` in `localStorage`. |
-| `/login` | `src/app/login/page.tsx` | Member login by phone or email; looks up an existing member in Firestore and stores `memberId` in `localStorage`, then routes to `/member`. |
-| `/member` | `src/app/member/page.tsx` | Member dashboard: shows QR code, membership status, billing info, vehicle, visit history, monthly wash count, estimated savings, and pause/cancel/reactivate controls (backed by Firestore). |
-| `/staff-login` | `src/app/staff-login/page.tsx` | Simple 4-digit PIN screen for staff; currently routes to `/admin` on any 4-digit PIN (placeholder auth). |
-| `/admin` | `src/app/admin/page.tsx` | Staff dashboard: daily stats, recent check-ins, quick actions, member check-in/lookup by plate/name/phone, and full members table with visit counts — all powered by Firestore queries. |
-| `/terms` | `src/app/terms/page.tsx` | Terms of Service page describing membership agreement, billing, cancellation, usage, liability, and other legal sections. |
-| `/privacy` | `src/app/privacy/page.tsx` | Privacy Policy page explaining data collection, usage, SMS, security, visit history, cookies/analytics, and user rights. |
+| `/` | `page.tsx` | Single-page marketing site with smooth-scroll anchors. |
+| `/signup` | `signup/page.tsx` | Multi-step signup: plan (+ monthly/annual toggle) → vehicle → info + password → embedded Stripe payment → inline confirmation. Creates Firebase Auth user + Firestore member. |
+| `/signup/success` | `signup/success/page.tsx` | Legacy path for Stripe Checkout redirect: verifies session, creates Auth user + Firestore member. Primary flow confirms on `/signup` step 5 instead. |
+| `/login` | `login/page.tsx` | Member login via email/password (Firebase Auth) or phone OTP (Firebase Phone Auth + invisible reCAPTCHA). Falls back to Firestore lookup for pre-auth members. |
+| `/member` | `member/page.tsx` | Member dashboard: QR code (`MCW:{id}`), status/billing, vehicle, visit history, savings calc, pause/cancel/reactivate. |
+| `/staff-login` | `staff-login/page.tsx` | 4-digit PIN gate; any complete PIN routes to `/admin` (placeholder auth). |
+| `/admin` | `admin/page.tsx` | Staff dashboard: stats, MRR breakdown, QR scanner, manual lookup, check-in, members table. |
+| `/terms` | `terms/page.tsx` | Terms of Service (membership, billing, cancellation, liability). |
+| `/privacy` | `privacy/page.tsx` | Privacy Policy (data collection, SMS, Firebase/Stripe storage, visit history). |
 
 ---
 
@@ -117,17 +127,17 @@ majestic-car-wash/
 
 | Component | Purpose |
 |-----------|--------|
-| **Navbar** | Sticky nav with logo, links (About, Services, Membership, Gallery, Reviews, Location), “Join Now,” scroll-to-section behavior, and scrolled state styling. |
-| **Hero** | Full-width hero with parallax background image, tagline (“Beverly Grove Since 1984”), headline (“The Hand Wash Your Car Deserves”), CTA buttons (View Membership Plans, Explore Services). |
-| **Marquee** | Horizontal ticker: “100% Hand Wash”, “Full Interior Detail”, “Scratch-Free Guarantee”, “Unlimited Memberships”, “Shell Gas On-Site”, “Beverly Grove, LA”, “Open 7 Days”, “40+ Years of Trust”. |
-| **About** | “Our Story” — 42 years, one promise; animated counter (42); short copy and value props. |
-| **Services** | “From Quick Wash to Full Detail” — grid of 6 services (Exterior Hand Wash, Full-Service Wash, Premium Detail, Paint Protection, Interior Deep Clean, Sap & Stain Removal) with images, descriptions, and prices; uses `RevealOnScroll`. |
-| **Membership** | “Unlimited Memberships” — three tiers (Essential $34.99, Premium $49.99 featured, Ultimate $64.99) with feature lists and CTAs to `/signup?plan=…`; promo strip “First month $14.99”; background image. |
-| **Gallery** | “See the Majestic Difference” — image mosaic (6 Unsplash images, some wide). |
-| **Reviews** | “Don’t Take Our Word For It” — three testimonial cards (avatar, stars, quote, name, “Google Review”). |
-| **Location** | “Visit Us” — embedded Google Map + address (8017 W 3rd St, LA 90048), phone, hours, gas station note, “Drive in — no appointment” CTA. |
-| **CtaBand** | Full-width CTA: “Ready for the Cleanest Car on Your Block?” with membership pitch and button to `#membership`. |
-| **Footer** | Placeholder footer (structure only, minimal content). |
+| **Navbar** | Sticky nav, section links, **Member Login** (`/login`), **Join Now** CTA. |
+| **Hero** | Parallax hero, tagline, headline, CTAs to membership and services. |
+| **Marquee** | Scrolling trust badges (hand wash, memberships, Shell gas, 40+ years, etc.). |
+| **About** | "42 Years. One Promise." with animated counter and value props. |
+| **Services** | 6 service cards with images, descriptions, and prices. |
+| **Membership** | 3 tiers with **monthly/annual billing toggle** (Save 15%), feature lists, CTAs to `/signup?plan=…&interval=…`. |
+| **Gallery** | 6-image mosaic. |
+| **Reviews** | 3 Google-style testimonial cards. |
+| **Location** | Google Maps embed, address, phone, hours, gas station note. |
+| **CtaBand** | Full-width membership CTA. |
+| **Footer** | Brand copy, service/membership links, social (Instagram, Facebook, Yelp, Maps), legal links (`/terms`, `/privacy`), staff link (`/staff-login`). |
 
 ---
 
@@ -135,104 +145,123 @@ majestic-car-wash/
 
 | Component | Purpose |
 |-----------|--------|
-| **RevealOnScroll** | Wraps content and reveals it when it enters viewport (IntersectionObserver); supports `className`, `delay`, and `as` for wrapper element. Used across About, Services, Membership, Gallery, Reviews, Location, CtaBand. |
+| **RevealOnScroll** | IntersectionObserver reveal with optional delay; used across marketing sections. |
 
 ---
 
-### Signup flow (`/signup`)
+### Signup flow (`/signup`) — primary path
 
-- **Client-only:** `"use client"`, `useSearchParams` for `?plan=essential|premium|ultimate`.
-- **Plans:** Essential $34.99, Premium $49.99, Ultimate $64.99; first month promo $14.99.
-- **Steps (when no `?plan`):** 1) Plan → 2) Vehicle → 3) Info → 4) Payment.  
-  **With `?plan`:** 1) Vehicle → 2) Info → 3) Payment.
-- **Vehicle step:** Vehicle type (Sedan / SUV / Minivan) with +$5 for SUV/van; make/model: type-ahead make search (e.g. Tesla, BMW) with “Popular in Beverly Grove” vs “All Brands”, then model chips; color, plate.
-- **Info step:** First name, last name, email, phone.
-- **Payment step:** Shows final pricing summary (first month at $14.99, then plan rate + surcharge) and calls `/api/create-checkout-session` to construct a Stripe Checkout subscription with a first-month promo discount; user is redirected to Stripe-hosted checkout.
-- **Post-checkout:** On return to `/signup/success?session_id=...`, the app verifies the session server-side via `/api/verify-session`, computes next billing date, and persists the member in Firestore with Stripe customer/subscription IDs.
-- **UI:** Top bar (logo + “Back to site”), step progress indicator, single card layout.
+**Steps (no `?plan`):** Plan → Vehicle → Info → Payment → Confirmation  
+**With `?plan`:** Vehicle → Info → Payment → Confirmation  
+**Query params:** `?plan=essential|premium|ultimate`, `?interval=annual` (optional)
+
+| Step | Details |
+|------|---------|
+| **Plan** | Monthly/annual toggle. Essential ($34.99/mo or $349.99/yr), Premium ($49.99/$499.99), Ultimate ($64.99/$649.99). Monthly promo: first month $14.99. Annual: pay upfront, save ~15%. |
+| **Vehicle** | Sedan / SUV / Van (+$5/mo or +$60/yr surcharge). Type-ahead make search (30+ brands), model chips, color, license plate. |
+| **Info** | First/last name, email, phone, password + confirm (min 6 chars). |
+| **Payment** | Calls `/api/create-subscription` → Stripe Payment Element (cards, Apple Pay, Google Pay). Monthly: $14.99 due today. Annual: full year due today. |
+| **Confirmation** | Creates Firebase Auth account + Firestore member with `stripeCustomerId`, `stripeSubscriptionId`, `authUid`, `billingInterval`. Stores `memberId` in `localStorage`. |
 
 ---
 
-### Member login & dashboard (`/login`, `/member`)
+### Member login & dashboard
 
-- **Login options:** Phone or email tabs; each looks up a member via Firestore helpers (`getMemberByPhone`, `getMemberByEmail`).
-- **Session storage:** On success, `memberId` is saved in `localStorage` and the user is redirected to `/member`; missing/invalid IDs redirect back to `/login`.
-- **Dashboard content:** Shows scannable QR code (generated with `qrcode` and encoded as `MCW:{memberId}`), membership status and billing (plan, monthly price, next billing, member since), vehicle details, recent visit history, monthly wash count, and estimated savings vs retail pricing.
-- **Membership management:** Buttons to pause, reactivate, and cancel membership, all calling Firestore helpers (e.g. `updateMemberStatus`) and updating local state.
+**Login (`/login`)**
+- **Email tab:** Firebase `signInWithEmailAndPassword` → lookup member by `authUid` (fallback: email in Firestore).
+- **Phone tab:** Firebase Phone Auth with invisible reCAPTCHA → 6-digit OTP → lookup by `authUid` or phone. Firestore-only fallback if phone auth unavailable.
+
+**Dashboard (`/member`)**
+- Scannable QR code (`MCW:{memberId}`) via `qrcode` library.
+- Membership status grid: plan, monthly total, next billing, member since, status, plate.
+- Vehicle on file with type icon and surcharge note.
+- Recent visits (last 10) + monthly wash count + savings vs retail.
+- Manage subscription: upgrade (UI), update payment (UI), pause, cancel with confirmation.
 
 ---
 
 ### Staff tools (`/staff-login`, `/admin`)
 
-- **Staff login:** 4-digit PIN UI with auto-advance and basic keyboard handling; currently any non-empty 4-digit PIN navigates to `/admin` (auth placeholder).
-- **Admin dashboard:** Top nav with date and staff identity; cards showing “Washes Today”, “Active Members”, “Monthly MRR”, and “Member Washes Today`, fed by `getDashboardStats` and `getTodaysVisits`.
-- **Recent check-ins:** List of today’s visits (time, initials, name, vehicle, plan) using Firestore `Visit` data.
-- **Quick actions:** Buttons for scanning QR (placeholder), manual lookup, logging walk-in washes (UI only), and jumping to the members table.
-- **Member check-in view:** Search by plate/name/phone with debounced Firestore-backed `searchMembers`; select a member to see full profile (plan, billing, contact, vehicle, “member for” duration) and log a visit via `logVisit`, updating visit counts and dashboard stats.
-- **Members table:** Pageless table of all members (`getAllMembers`, `getAllVisitCounts`) with plan badges, monthly price, “member for” duration, total visits, and status indicator.
+**Staff login:** 4-digit PIN UI; routes to admin on any filled PIN.
+
+**Admin dashboard (redesigned `a2-*` UI):**
+
+| Tab | Features |
+|-----|----------|
+| **Dashboard** | Check-ins today, active members (by tier), **MRR with tier breakdown** (monthly/annual normalized), washes this month, recent check-ins list, quick actions. |
+| **Check-In** | **Live QR scanner** (`html5-qrcode`, parses `MCW:{id}`), manual search (plate/name/phone), member profile card, check-in button (logs visit via `logVisit`), interval badge (Monthly/Annual). |
+| **Members** | Searchable table: name, vehicle, plan, price (with interval), tenure, visit count, status. |
 
 ---
 
-### Data and content
+### Backend & data layer
 
-- **Copy:** All marketing, legal, and UI copy is in-component (no CMS). Services, membership tiers, reviews, location, legal text, and signup plans are defined in their respective components/pages.
-- **Images:** Unsplash URLs (cars, detailing) and placeholder avatars; favicon in `src/app/favicon.ico`.
-- **Maps:** Google Maps embed URL in `Location.tsx` (Beverly Grove).
+**Firebase (`src/lib/firebase.ts`)**
+- Initializes Firebase app from `NEXT_PUBLIC_FIREBASE_*` env vars.
+- Exports `db` (Firestore) and `auth` (Firebase Auth).
 
----
+**Firestore (`src/lib/firestore.ts`)**
 
-### Styling and behavior
+| Collection | Types / fields |
+|------------|----------------|
+| `members` | `Member`: name, email, phone, plan, planName, price, status, vehicle, surcharge, memberSince, nextBilling, `stripeCustomerId`, `stripeSubscriptionId`, `billingInterval`, `authUid`, createdAt |
+| `visits` | `Visit`: memberId, memberName, initials, serviceType, plan, vehicleInfo, date, checkedInBy |
 
-- **Tailwind + globals:** Utility classes and custom section/component classes in `globals.css` (hero, nav, marquee, about, services, membership, gallery, reviews, location, cta-band, footer, signup).
-- **Scroll:** Manual scroll restoration and scroll-to-top on load via inline script in layout; smooth scroll for in-page anchors.
-- **Responsive:** Layout and typography are built to work across viewports (breakpoints and section layout in CSS).
-
----
-
-### Scripts and config
-
-- **Package scripts:** `dev`, `build`, `start`, `lint`.
-- **Config:** `next.config.ts`, `tsconfig.json`, `postcss.config.mjs`, `eslint.config.mjs`.
-
----
-
-### Backend & data layer (Firebase / Firestore)
-
-- **Firebase app:** `src/lib/firebase.ts` initializes a single Firebase app using env vars (`NEXT_PUBLIC_FIREBASE_*`) and exports a shared Firestore `db` instance.
-- **Members & visits collection:** `src/lib/firestore.ts` defines `Member` and `Visit` types and wraps all Firestore access.
-- **Member operations:** Create member on signup, get member by ID, list all members, search members in-memory, update member fields/status/vehicle/plan, delete member, and count active members.
-- **Visit / check-in operations:** Log check-in visit, get visits for a member, fetch recent/today’s visits, compute per-member monthly visit counts, load dashboard stats (active members, today’s washes, member washes, MRR), and get all visit counts for the admin table.
-- **Lookup helpers:** `getMemberByPhone` / `getMemberByEmail` / `getMemberByPlate` power the login and admin flows.
+| Function | Purpose |
+|----------|---------|
+| `createMember` | Create member on signup |
+| `getMember` / `getAllMembers` | Read members |
+| `getMemberByPhone` / `getMemberByEmail` / `getMemberByPlate` / `getMemberByAuthUid` | Login & lookup |
+| `searchMembers` | Client-side filter (plate, name, phone, email) |
+| `updateMember` / `updateMemberStatus` / `updateMemberVehicle` / `updateMemberPlan` | Member updates |
+| `deleteMember` | Remove member |
+| `logVisit` / `getMemberVisits` / `getTodaysVisits` / `getMonthlyVisitCount` / `getMonthlyTotalVisits` | Visit tracking |
+| `getDashboardStats` / `getAllVisitCounts` | Admin stats (active members, MRR, today's washes) |
 
 ---
 
 ### Payments & Stripe integration
 
-- **Server Stripe client:** `src/lib/stripe.ts` exports `getServerStripe()` for API routes, configured with `STRIPE_SECRET_KEY` and a pinned API version.
-- **Checkout session creation:** `src/app/api/create-checkout-session/route.ts`:
-  - Validates incoming plan and customer data from the signup form.
-  - Creates a Stripe customer with vehicle metadata.
-  - Creates a monthly recurring price for the chosen plan + vehicle surcharge.
-  - Creates a one-time coupon so the **first month is $14.99**, regardless of plan.
-  - Starts a Stripe Checkout subscription session and returns its URL to the client.
-- **Session verification:** `src/app/api/verify-session/route.ts`:
-  - Retrieves the Checkout Session (expanding `subscription` and `customer`).
-  - Confirms payment is completed.
-  - Reads member details (plan, pricing, vehicle, contact, surcharge) from subscription metadata.
-  - Computes the human-readable next billing date and returns a normalized member payload to the success page.
-- **Webhooks:** `src/app/api/webhooks/stripe/route.ts`:
-  - Verifies Stripe signatures with `STRIPE_WEBHOOK_SECRET`.
-  - Handles events like `checkout.session.completed`, `invoice.payment_succeeded`, `invoice.payment_failed`, and `customer.subscription.deleted` (currently logs only, with comments on where to update Firestore in production).
+**Stripe helpers (`src/lib/stripe.ts`)**
+- `getServerStripe()` — server-side Stripe client (`STRIPE_SECRET_KEY`).
+- `getStripe()` — client-side loader (`NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`).
+
+| API route | Purpose |
+|-----------|---------|
+| **`POST /api/create-subscription`** | **Primary flow.** Creates Stripe customer, recurring price (monthly or annual + surcharge), first-month promo coupon (monthly only), incomplete subscription, returns `clientSecret` for Payment Element. |
+| **`POST /api/create-checkout-session`** | Alternate flow. Creates Stripe Checkout subscription session with promo coupon; redirects to hosted checkout. |
+| **`POST /api/verify-session`** | Retrieves Checkout session, confirms payment, returns member payload from subscription metadata (used by `/signup/success`). |
+| **`POST /api/webhooks/stripe`** | Verifies webhook signature; handles `checkout.session.completed`, `invoice.payment_succeeded`, `invoice.payment_failed`, `customer.subscription.deleted` (logs only — Firestore sync TODO). |
+
+**Billing intervals**
+- **Monthly:** $14.99 first month via one-time Stripe coupon, then plan rate + surcharge.
+- **Annual:** Full year upfront (plan annual price + surcharge × 12), ~15% savings vs monthly.
+
+---
+
+### Environment variables (`.env.local`)
+
+| Variable | Used by |
+|----------|---------|
+| `NEXT_PUBLIC_FIREBASE_*` | Firebase init |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe Payment Element |
+| `STRIPE_SECRET_KEY` | Server Stripe API routes |
+| `STRIPE_WEBHOOK_SECRET` | Webhook signature verification |
+| `NEXT_PUBLIC_BASE_URL` | Checkout success/cancel URLs (Checkout flow) |
 
 ---
 
 ## Not implemented (or placeholder)
 
-- **Footer:** Markup only; no links, social, or legal copy.
-- **Auth security:** Staff login uses a dummy 4-digit PIN flow with no real authentication; member auth is by phone/email lookup only (no passwords/OTP yet).
-- **Payments edge cases:** Stripe webhooks currently just log events; they do not yet update Firestore on renewal, failure, or cancellation, so membership status/billing dates are not fully source-of-truth from Stripe.
-- **QR scanning:** “Scan QR Code” flows in admin are UI placeholders; no camera/QR integration yet.
-- **ScrollToTopOnLoad:** Still no dedicated component; scroll restoration handled via inline script in `layout.tsx`.
+| Area | Status |
+|------|--------|
+| **Staff auth** | PIN accepts any 4 digits; no real staff accounts or session. |
+| **Webhook → Firestore sync** | Renewals, failures, and cancellations logged but not written to Firestore. |
+| **Member self-service** | "Update Vehicle" and "Update Payment" buttons are UI only. |
+| **Upgrade plan** | Button present on member dashboard; no Stripe plan change wired up. |
+| **Walk-in wash logging** | Removed from admin quick actions; no non-member wash tracking. |
+| **CMS** | All copy is hardcoded in components. |
+| **Firestore search** | `searchMembers` fetches all members and filters client-side (not scalable). |
 
 ---
 
@@ -240,14 +269,17 @@ majestic-car-wash/
 
 | Need to… | Look at… |
 |----------|----------|
-| Change site title/SEO | `src/app/layout.tsx` (metadata) |
-| Edit home section order or sections | `src/app/page.tsx` |
-| Change services or membership tiers | `src/components/Services.tsx`, `src/components/Membership.tsx` |
-| Adjust signup steps or plans | `src/app/signup/page.tsx` (PLANS, steps, form state) |
-| Tweak scroll reveal behavior | `src/components/RevealOnScroll.tsx` |
-| Update global styles | `src/app/globals.css` |
-| Add new pages | New route under `src/app/` (e.g. `src/app/contact/page.tsx`) |
+| Change site title/SEO | `src/app/layout.tsx` |
+| Edit home section order | `src/app/page.tsx` |
+| Change plans or annual pricing | `src/components/Membership.tsx`, `src/app/signup/page.tsx` (PLANS) |
+| Adjust signup/payment flow | `src/app/signup/page.tsx`, `src/app/api/create-subscription/route.ts` |
+| Change login behavior | `src/app/login/page.tsx`, `src/lib/firebase.ts` |
+| Member dashboard features | `src/app/member/page.tsx` |
+| Admin check-in / QR scan | `src/app/admin/page.tsx` |
+| Firestore schema / queries | `src/lib/firestore.ts` |
+| Stripe config / webhooks | `src/lib/stripe.ts`, `src/app/api/webhooks/stripe/route.ts` |
+| Global styles | `src/app/globals.css` |
 
 ---
 
-*Generated as a repo layout and implementation summary for Majestic Car Wash.*
+*Repo layout and implementation summary for Majestic Car Wash.*

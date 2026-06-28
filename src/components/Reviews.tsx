@@ -1,54 +1,34 @@
 import RevealOnScroll from "./RevealOnScroll";
+import { Flag } from "./Icons";
 
-const reviews = [
-  {
-    text: "I\u2019ve been coming here for 3 years and the quality never drops. Ask for Javier \u2014 he treats your car like it\u2019s his own. Worth every single penny over the automated places.",
-    name: "Michael R.",
-    source: "Google Review",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
-  },
-  {
-    text: "Tree sap all over my hood from parking under a pine. Took it to Majestic and it came back looking brand new. No scratches, no swirls. These guys genuinely know what they\u2019re doing.",
-    name: "Sarah K.",
-    source: "Google Review",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80",
-  },
-  {
-    text: "My car comes out looking like it just rolled off the lot. They clean the inside too \u2014 vacuum, dash, windows. Things you never get at those drive-through tunnel places.",
-    name: "David L.",
-    source: "Google Review",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80",
-  },
+const CARDS = [
+  { n: "1", color: "var(--blue)", title: "Attention to Detail", source: "The hand-wash difference", text: "Every car gets individual attention, washed and finished by hand, never rushed through on brushes alone." },
+  { n: "2", color: "var(--red)", title: "Reduced Risk of Paint Damage", source: "Gentler on your finish", text: "Hand washing reduces the risk of swirl marks and micro-scratches that harsh automated equipment can leave behind." },
+  { n: "3", color: "var(--gold)", title: "Personalized Care", source: "Wash or full detail", text: "From a quick Silver wash to a complete detail, our crew tailors the care to your car, inside and out." },
 ];
 
 export default function Reviews() {
   return (
-    <section className="reviews-section" id="reviews">
+    <section className="reviews-section" id="why">
       <div className="section-inner">
         <RevealOnScroll>
-          <div className="section-label">Customer Love</div>
-          <div className="section-title">
-            Don&apos;t Take Our
-            <br />
-            Word For It
-          </div>
+          <div className="section-label">Why Customers Choose Us</div>
+          <div className="section-title">Hand Car Wash<br />Is Better.</div>
           <p className="section-sub">
-            Hear from customers who keep coming back, year after year.
+            Three reasons drivers across Beverly Grove trust their cars to Majestic.
           </p>
+          <div className="ph-note"><Flag /> Placeholder: swap in real Google &amp; Yelp reviews here before launch</div>
         </RevealOnScroll>
         <div className="reviews-grid">
-          {reviews.map((rev, i) => (
-            <RevealOnScroll className="rev-card" delay={i * 120} key={rev.name}>
+          {CARDS.map((c) => (
+            <RevealOnScroll className="rev-card" key={c.n}>
               <div className="rev-stars">★★★★★</div>
-              <p className="rev-text">&ldquo;{rev.text}&rdquo;</p>
+              <p className="rev-text">{c.text}</p>
               <div className="rev-author">
-                <div className="rev-avatar">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={rev.avatar} alt="" />
-                </div>
+                <div className="rev-avatar-letter" style={{ background: c.color }}>{c.n}</div>
                 <div>
-                  <div className="rev-name">{rev.name}</div>
-                  <div className="rev-source">{rev.source}</div>
+                  <div className="rev-name">{c.title}</div>
+                  <div className="rev-source">{c.source}</div>
                 </div>
               </div>
             </RevealOnScroll>
