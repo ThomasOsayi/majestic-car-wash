@@ -29,7 +29,7 @@ export default function Hero() {
           <div className="hero-thumb"><img src="/majestic/wash-menu-sign.jpg" alt="Wash menu sign" /></div>
           <div className="hero-thumb"><img src="/majestic/service-menu-card.jpg" alt="Service menu" /></div>
           <div className="hero-thumb"><img src="/majestic/alacarte-board-1.jpg" alt="A la carte board" /></div>
-          <a href="#gallery" className="hero-thumb-more"><span>+</span>Gallery</a>
+          <a href="#about" className="hero-thumb-more"><span>+</span>Photos</a>
         </div>
       </div>
     </section>

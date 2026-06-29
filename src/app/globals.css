@@ -2641,3 +2641,182 @@ select.signup-input option { background: var(--navy); color: white; }
   .steps-grid { grid-template-columns: 1fr; }
   .cf-row { grid-template-columns: 1fr; }
 }
+
+/* ============================================================
+   Image containers hug the photo: natural aspect ratio, so the
+   rounded border sits flush against each jpg. No crop, no whitespace.
+   ============================================================ */
+
+/* GALLERY: two full-width banners + a 2-up masonry of the squarer photos.
+   Each card's height equals its image's height. */
+.gallery-stack { margin: 40px auto 0; max-width: 920px; }
+.gallery-stack .g-full,
+.gallery-stack .g-card {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  font-size: 0;            /* kill the inline-image baseline gap */
+}
+.gallery-stack .g-full img,
+.gallery-stack .g-card img {
+  display: block;
+  width: 100%;
+  height: auto;            /* natural aspect → border fits exactly */
+}
+.gallery-stack .g-full { margin-bottom: 16px; }
+.gallery-stack .g-masonry {
+  column-count: 2;
+  column-gap: 16px;
+  margin-bottom: 16px;
+}
+.gallery-stack .g-card {
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  margin: 0 0 16px;
+}
+@media (max-width: 600px) {
+  .gallery-stack .g-masonry { column-count: 1; }
+}
+
+/* ABOUT: two columns of stacked photos, natural aspect ratio */
+.about .about-images {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  column-count: unset;
+}
+.about .about-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.about .about-images .about-img {
+  height: auto !important;
+  min-height: 0 !important;
+  grid-row: auto !important;
+  padding: 0;
+  font-size: 0;
+}
+.about .about-images .about-img img {
+  display: block;
+  width: 100%;
+  height: auto !important;
+}
+.about .about-images .about-img:hover img { transform: none; }
+@media (max-width: 600px) {
+  .about .about-images { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   V4 MOBILE: hamburger drawer, sticky CTA bar, responsive polish.
+   Append this block to the END of src/app/globals.css (after the
+   image-container block). Nothing above is modified.
+   ============================================================ */
+
+/* ---- Hamburger button (hidden on desktop, shown on mobile) ---- */
+.nav-burger {
+  display: none;
+  width: 44px; height: 44px;
+  flex-direction: column; gap: 5px;
+  align-items: center; justify-content: center;
+  background: none; border: none; cursor: pointer; padding: 0;
+}
+.nav-burger span {
+  width: 22px; height: 2px; background: #fff; border-radius: 2px;
+}
+
+/* ---- Full-screen mobile drawer ---- */
+.nav-drawer {
+  position: fixed; inset: 0; z-index: 2000;
+  background: linear-gradient(180deg, #070E24, #0B1A38);
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  visibility: hidden;
+  display: flex; flex-direction: column;
+}
+.nav-drawer.open { transform: translateX(0); visibility: visible; }
+.nav-drawer-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px;
+}
+.nav-drawer-close {
+  width: 44px; height: 44px;
+  background: none; border: none; cursor: pointer;
+  color: #fff; font-size: 30px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+}
+.nav-drawer-links { padding: 10px 24px; display: flex; flex-direction: column; }
+.nav-drawer-links a {
+  font-family: 'Archivo Black', sans-serif; font-size: 28px;
+  color: #fff; text-decoration: none;
+  padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.nav-drawer-links a.active { color: var(--red-glow); }
+.nav-drawer-cta { margin-top: auto; padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+.nav-drawer-cta .btn { width: 100%; justify-content: center; }
+.nav-drawer-call {
+  text-align: center; color: rgba(255,255,255,0.55);
+  font-size: 13px; font-weight: 600; text-decoration: none;
+}
+
+/* ---- Sticky bottom CTA bar (mobile only) ---- */
+.mobile-cta-bar { display: none; }
+
+@media (max-width: 768px) {
+  /* show hamburger; .nav-links is already display:none at this width */
+  .nav-burger { display: flex; }
+
+  /* persistent bottom action bar */
+  .mobile-cta-bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 1500;
+    display: flex; gap: 10px;
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+    background: rgba(255,255,255,0.94);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--gray-200);
+    box-shadow: 0 -6px 24px rgba(0,0,0,0.08);
+  }
+  .mobile-cta-call {
+    flex: 0 0 52px; height: 52px; border-radius: 13px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--gray-100); border: 1px solid var(--gray-200);
+    color: var(--gray-900); font-size: 18px; text-decoration: none;
+  }
+  .mobile-cta-join {
+    flex: 1; height: 52px; border-radius: 13px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: var(--red); color: #fff; font-weight: 800; font-size: 15px;
+    text-decoration: none; box-shadow: 0 8px 22px rgba(212,32,44,0.32);
+  }
+  /* clearance so the bar never permanently covers footer content */
+  footer { padding-bottom: 96px; }
+
+  /* --- mobile polish --- */
+  .nav-logo-img { width: 36px; height: 36px; font-size: 17px; }
+  .nav-logo-text { font-size: 15px; }
+  .hero { min-height: 88vh; }
+  .page-hero .section-inner { padding-top: 110px; padding-bottom: 48px; }
+
+  /* keep weekly specials 2-up (small pills look better paired) */
+  .specials-row { grid-template-columns: 1fr 1fr; }
+
+  /* footer: brand full width, link columns in two columns */
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px 24px; }
+  .footer-brand { grid-column: 1 / -1; }
+  .footer-bar { flex-direction: column; align-items: flex-start; gap: 14px; }
+
+  /* 16px inputs prevent iOS auto-zoom */
+  .cf-field input, .cf-field textarea { font-size: 16px; }
+
+  /* shorter map */
+  .loc-map { height: 340px; }
+}
+
+@media (max-width: 480px) {
+  .hero h1 { font-size: 44px; }
+  .page-hero h1 { font-size: 34px; }
+  .hero-btns { flex-direction: column; }
+  .hero-btns .btn { width: 100%; justify-content: center; }
+  .footer-grid { grid-template-columns: 1fr; }
+  .footer-brand { grid-column: auto; }
+}

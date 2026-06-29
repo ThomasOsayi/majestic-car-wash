@@ -3,6 +3,7 @@ import { Instagram, Facebook, Phone } from "./Icons";
 
 export default function Footer() {
   return (
+    <>
     <footer>
       <div className="footer-inner">
         <div className="footer-grid">
@@ -56,5 +57,14 @@ export default function Footer() {
         </div>
       </div>
     </footer>
+
+    {/* Mobile-only sticky action bar (CSS hides it on desktop) */}
+    <div className="mobile-cta-bar">
+      <a className="mobile-cta-call" href="tel:+13239337393" aria-label="Call Majestic Car Wash">
+        <Phone />
+      </a>
+      <Link className="mobile-cta-join" href="/membership">Join the Club &rarr;</Link>
+    </div>
+    </>
   );
 }

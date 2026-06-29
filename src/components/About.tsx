@@ -13,14 +13,21 @@ export default function About() {
         </RevealOnScroll>
         <div className="about-grid">
           <RevealOnScroll className="about-images">
-            <div className="about-img">
-              <img src="/majestic/storefront.jpg" alt="Majestic Hand Car Wash storefront on W 3rd St" />
+            <div className="about-col">
+              <div className="about-img">
+                <img src="/majestic/detailing-bay.jpg" alt="Complete auto detailing in our bay" />
+              </div>
+              <div className="about-img">
+                <img src="/majestic/storefront.jpg" alt="Majestic Hand Car Wash neon storefront sign" />
+              </div>
             </div>
-            <div className="about-img">
-              <img src="/majestic/wash-menu-sign.jpg" alt="Silver, Gold and Diamond wash menu" />
-            </div>
-            <div className="about-img">
-              <img src="/majestic/detailing-bay.jpg" alt="Complete auto detailing bay" />
+            <div className="about-col">
+              <div className="about-img">
+                <img src="/majestic/service-menu-card.jpg" alt="Majestic wash and detail menu" />
+              </div>
+              <div className="about-img">
+                <img src="/majestic/wash-menu-sign.jpg" alt="Silver, Gold and Diamond wash tiers" />
+              </div>
             </div>
             <div className="about-badge">
               <span className="about-badge-num" style={{ fontSize: 26 }}>100%</span>
