@@ -1,40 +1,58 @@
-import RevealOnScroll from "./RevealOnScroll";
-import { Flag } from "./Icons";
+/* ── Customer reviews ──────────────────────────────────────────────────
+   Continuous one-direction marquee of short verbatim pull-quotes (the
+   reviewer's own exact words), each linking to the full review on Yelp.
+   The list is rendered twice so the scroll loops seamlessly with no gap.
 
-const CARDS = [
-  { n: "1", color: "var(--blue)", title: "Attention to Detail", source: "The hand-wash difference", text: "Every car gets individual attention, washed and finished by hand, never rushed through on brushes alone." },
-  { n: "2", color: "var(--red)", title: "Reduced Risk of Paint Damage", source: "Gentler on your finish", text: "Hand washing reduces the risk of swirl marks and micro-scratches that harsh automated equipment can leave behind." },
-  { n: "3", color: "var(--gold)", title: "Personalized Care", source: "Wash or full detail", text: "From a quick Silver wash to a complete detail, our crew tailors the care to your car, inside and out." },
-];
+   All four are clean, on-message 5-star raves. Aaron Z. and Carissa M. are
+   left off on purpose (their text mentions paint/equipment damage and "not
+   personalized service," which fight the hand-wash positioning).
 
-export default function Reviews() {
-  return (
-    <section className="reviews-section" id="why">
-      <div className="section-inner">
-        <RevealOnScroll>
-          <div className="section-label">Why Customers Choose Us</div>
-          <div className="section-title">Hand Car Wash<br />Is Better.</div>
-          <p className="section-sub">
-            Three reasons drivers across Beverly Grove trust their cars to Majestic.
-          </p>
-          <div className="ph-note"><Flag /> Placeholder: swap in real Google &amp; Yelp reviews here before launch</div>
-        </RevealOnScroll>
-        <div className="reviews-grid">
-          {CARDS.map((c) => (
-            <RevealOnScroll className="rev-card" key={c.n}>
-              <div className="rev-stars">★★★★★</div>
-              <p className="rev-text">{c.text}</p>
-              <div className="rev-author">
-                <div className="rev-avatar-letter" style={{ background: c.color }}>{c.n}</div>
-                <div>
-                  <div className="rev-name">{c.title}</div>
-                  <div className="rev-source">{c.source}</div>
-                </div>
-              </div>
-            </RevealOnScroll>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
+   To swap a quote, keep it to a short exact phrase from that person's review
+   (don't reword it). To add one, copy an entry in REVIEWS.
+   --------------------------------------------------------------------- */
+   const YELP = "https://www.yelp.com/biz/majestic-car-wash-los-angeles";
+
+   const REVIEWS = [
+     { initial: "S", name: "S S.",      source: "Yelp \u00b7 April 2026",   color: "var(--red)",  quote: "My car looked brand new.",            href: YELP },
+     { initial: "E", name: "Emily L.",  source: "Yelp \u00b7 January 2024", color: "var(--blue)", quote: "They have a customer for life.",       href: YELP },
+     { initial: "A", name: "Angel P.",  source: "Yelp \u00b7 July 2023",    color: "var(--gold)", quote: "Javier and his team made it work.",    href: YELP },
+     { initial: "N", name: "Nycole H.", source: "Yelp \u00b7 August 2020",  color: "var(--red)",  quote: "Love a nice sparkly car at the end.",  href: YELP },
+   ];
+   
+   export default function Reviews() {
+     // Render the set twice for a seamless looping marquee
+     const loop = [...REVIEWS, ...REVIEWS];
+   
+     return (
+       <section className="reviews-section" id="reviews">
+         <div className="section-inner">
+           <div className="section-label">Reviews</div>
+           <div className="section-title">What Drivers<br />Say.</div>
+           <p className="section-sub">Real 5-star reviews from drivers across Beverly Grove.</p>
+         </div>
+   
+         <div className="rev-marquee" aria-label="Customer reviews">
+           <div className="rev-marquee-track">
+             {loop.map((r, i) => (
+               <div className="rev-card" key={`${r.name}-${i}`} aria-hidden={i >= REVIEWS.length}>
+                 <div className="rev-stars">★★★★★</div>
+                 <p className="rev-text">&ldquo;{r.quote}&rdquo;</p>
+                 <div className="rev-card-foot">
+                   <div className="rev-author">
+                     <div className="rev-avatar-letter" style={{ background: r.color }}>{r.initial}</div>
+                     <div>
+                       <div className="rev-name">{r.name}</div>
+                       <div className="rev-source">{r.source}</div>
+                     </div>
+                   </div>
+                   <a className="rev-readmore" href={r.href} target="_blank" rel="noopener noreferrer">
+                     Read full review on Yelp &rarr;
+                   </a>
+                 </div>
+               </div>
+             ))}
+           </div>
+         </div>
+       </section>
+     );
+   }

@@ -2820,3 +2820,141 @@ select.signup-input option { background: var(--navy); color: white; }
   .footer-grid { grid-template-columns: 1fr; }
   .footer-brand { grid-column: auto; }
 }
+
+/* ============================================================
+   V4 REVIEWS: platform trust strip + Birdeye widget mount.
+   Append this block to the END of src/app/globals.css.
+   (The old .reviews-grid / .rev-card rules above are now unused
+   but harmless.)
+   ============================================================ */
+.rev-platforms {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 16px; margin-top: 44px;
+}
+.rev-platform {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 24px 26px; border-radius: 18px;
+  background: var(--cream); border: 1px solid var(--gray-200);
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.rev-platform:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+  border-color: var(--red);
+}
+.rev-platform-name {
+  font-family: 'Archivo Black', sans-serif;
+  font-size: 20px; color: var(--gray-900);
+}
+.rev-platform-meta { font-size: 14px; color: var(--gray-600); }
+.rev-platform-link { font-size: 13px; font-weight: 700; color: var(--red); margin-top: 6px; }
+
+.rev-widget { margin-top: 36px; }
+.rev-widget-empty {
+  margin-top: 36px; text-align: center;
+  padding: 52px 24px; border-radius: 22px;
+  background: var(--cream); border: 1px dashed var(--gray-200);
+}
+.rev-widget-empty p { color: var(--gray-600); font-size: 15px; margin-bottom: 20px; }
+
+@media (max-width: 768px) {
+  .rev-platforms { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   V4 REVIEWS CAROUSEL: header row + arrows, viewport/track, slides.
+   Append to END of src/app/globals.css (after the reviews block).
+   Reuses the existing .rev-card / .rev-platforms styles.
+   ============================================================ */
+
+/* Header row: title on the left, arrows top-right */
+.rev-head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 24px; flex-wrap: wrap;
+}
+.rev-arrows { display: flex; gap: 10px; flex-shrink: 0; }
+.rev-arrow {
+  width: 48px; height: 48px; border-radius: 50%;
+  border: 1px solid var(--gray-200); background: var(--white);
+  color: var(--gray-900); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.rev-arrow:hover {
+  border-color: var(--red); color: var(--red);
+  transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07);
+}
+
+/* Carousel */
+.rev-carousel { margin-top: 40px; }
+.rev-viewport { overflow: hidden; }
+.rev-track {
+  display: flex; gap: 24px;
+  transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+  align-items: stretch;
+}
+.rev-slide { flex: 0 0 auto; display: flex; }
+.rev-slide .rev-card { width: 100%; }
+
+/* the .rev-card lift on hover can fight the slide transform; keep it subtle */
+.rev-carousel .rev-card:hover { transform: none; box-shadow: 0 20px 56px rgba(0, 0, 0, 0.07); }
+
+/* ============================================================
+   V4 REVIEWS MARQUEE: continuous one-direction auto-scroll.
+   Append to END of src/app/globals.css.
+
+   This REPLACES the carousel approach. You can delete the old
+   "V4 REVIEWS CAROUSEL" block and the "V4 REVIEWS" platform-strip
+   block if you like (their classes are no longer used) — leaving
+   them in is harmless.
+   ============================================================ */
+
+.rev-marquee {
+  margin-top: 44px;
+  margin-left: -48px;   /* break out of the section's 48px side padding */
+  margin-right: -48px;  /* so the strip runs full-bleed, edge to edge   */
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+}
+
+.rev-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: revMarquee 40s linear infinite;
+}
+.rev-marquee:hover .rev-marquee-track { animation-play-state: paused; }
+
+@keyframes revMarquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); } /* exactly one copy → seamless loop */
+}
+
+/* Fixed-width cards with a trailing margin (not flex gap) so -50% lines up */
+.rev-marquee .rev-card {
+  width: 360px; flex: 0 0 360px; margin-right: 24px;
+  min-height: 220px; display: flex; flex-direction: column;
+}
+.rev-marquee .rev-text {
+  font-size: 19px; line-height: 1.5; color: var(--gray-900);
+  font-style: italic; margin-bottom: 20px;
+}
+.rev-card-foot { margin-top: auto; }
+.rev-readmore {
+  display: inline-block; margin-top: 14px;
+  font-size: 13px; font-weight: 700; color: var(--red); text-decoration: none;
+}
+.rev-readmore:hover { color: var(--red-glow); }
+
+@media (max-width: 768px) {
+  .rev-marquee { margin-left: -24px; margin-right: -24px; }
+  .rev-marquee .rev-card { width: 300px; flex-basis: 300px; }
+}
+
+/* Respect reduced-motion: stop the loop, allow manual horizontal scroll */
+@media (prefers-reduced-motion: reduce) {
+  .rev-marquee { overflow-x: auto; }
+  .rev-marquee-track { animation: none; }
+}
