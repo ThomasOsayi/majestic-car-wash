@@ -71,7 +71,6 @@ export default function Membership() {
               <li><span className="p-check ck-r">✓</span> 3 Silver Washes included each month</li>
               <li><span className="p-check ck-r">✓</span> 30% off everything else</li>
               <li><span className="p-check ck-r">✓</span> Free tire shine on every visit</li>
-              <li><span className="p-check ck-r">✓</span> 1 guest wash pass each month</li>
             </ul>
             <a href={JOIN_TEL} className="btn btn-tier btn-tier-red">Call to Join</a>
           </RevealOnScroll>

@@ -13,10 +13,6 @@ const QA = [
     a: "Yes. There are no contracts. Cancel or change your tier whenever you like.",
   },
   {
-    q: "What's a guest wash pass?",
-    a: "Club Elite members get one guest pass each month to treat a friend or family member to a wash on the house.",
-  },
-  {
     q: "Do my included washes carry over?",
     a: "Included monthly washes refresh at the start of each billing cycle. (Final rollover policy to be confirmed.)",
   },
