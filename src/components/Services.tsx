@@ -3,11 +3,11 @@ import { Calendar, StarSolid, Gem } from "./Icons";
 
 const DETAIL = [
   { name: "Hand Wash (No Tunnel)", price: "$50", up: true, desc: "Full hand wash, vacuum, wipe all inside, clean all windows, towel-dry exterior, door jams & trunk, wheel brightener, tire shine." },
-  { name: "Super Clean", price: "$69.99", up: true, desc: "Silver wash, clean door panels & seats, extra vacuum, exterior dressing, air freshener, wipe all inside, shampoo floor mats." },
-  { name: "Hand & Wax", price: "$69.99", up: true, desc: "Silver wash, carnauba paste wax, wheel brightener, tire shine." },
-  { name: "Seats or Carpet Shampoo", price: "$120", up: true, desc: "Silver wash, carpet or seat shampoo, 4 mats, tire shine, air freshener." },
-  { name: "Interior Shampoo", price: "$149.99", up: true, desc: "Silver wash, shampoo everything inside (dashboard, doors, seats, trunk & carpet mats), leather treatment, tire shine, air freshener." },
-  { name: "Clay & Wax", price: "$150.99", up: true, desc: "Silver wash, clay oxidation removal & overspray, carnauba wax, tire dressing, air freshener." },
+  { name: "Super Clean", price: "$79.99", up: true, desc: "Silver wash, clean door panels & seats, extra vacuum, exterior dressing, air freshener, wipe all inside, shampoo floor mats." },
+  { name: "Hand Wax", price: "$79.99", up: true, desc: "Silver wash, carnauba paste wax, wheel brightener, tire shine." },
+  { name: "Seats or Carpet Shampoo", price: "$140.00", up: true, desc: "Silver wash, carpet or seat shampoo, 4 mats, tire shine, air freshener." },
+  { name: "Clay & Wax", price: "$179.99", up: true, desc: "Silver wash, clay oxidation removal & overspray, carnauba wax, tire dressing, air freshener." },
+  { name: "Interior Shampoo", price: "$199.99", up: true, desc: "Silver wash, shampoo everything inside (dashboard, doors, seats, trunk & carpet mats), leather treatment, tire shine, air freshener." },
   { name: "Exterior Detail", price: "$249.99", up: true, desc: "Custom polish, remove oxidation, water spots, tar & overspray, buffing & wax, exterior dressing, wheel brightener." },
   { name: "Int. & Ext. Package: Complete Detail", price: "$349.99", up: true, desc: "The works, inside and out. Extra for SUVs, minivans, vans & trucks. Mats $3 each & up." },
 ];
@@ -15,7 +15,7 @@ const DETAIL = [
 const ALACARTE = [
   ["Custom Wash", "$39.99 & up"],
   ["Rims", "$20.99 & up"],
-  ["Leather Treatment", "$49.00 & up"],
+  ["Leather Treatment", "$94.99 & up"],
   ["Interior Dressing", "$30.00"],
   ["Exterior Dressing", "$15.00"],
   ["Tire Dressing", "$5.00"],
@@ -42,7 +42,7 @@ export default function Services() {
             <div className="wash-head silver">
               <h3>SILVER</h3>
               <div className="wash-tag">The essential hand wash</div>
-              <div className="wash-price">$29.99</div>
+              <div className="wash-price">$31.99</div>
             </div>
             <div className="wash-body">
               <ul>
@@ -55,7 +55,7 @@ export default function Services() {
               </ul>
             </div>
             <div className="wash-foot">
-              <span className="wash-thursday"><Calendar /> Thursday Special $25.99</span>
+              <span className="wash-thursday"><Calendar /> Thursday Special $27.99</span>
             </div>
           </div>
 
@@ -63,7 +63,7 @@ export default function Services() {
             <div className="wash-head gold">
               <h3>GOLD</h3>
               <div className="wash-tag">Shine &amp; protection added</div>
-              <div className="wash-price">$34.99</div>
+              <div className="wash-price">$36.99</div>
             </div>
             <div className="wash-body">
               <ul>
@@ -86,7 +86,7 @@ export default function Services() {
             <div className="wash-head diamond">
               <h3>DIAMOND</h3>
               <div className="wash-tag">The full-protection wash</div>
-              <div className="wash-price">$39.99</div>
+              <div className="wash-price">$41.99</div>
             </div>
             <div className="wash-body">
               <ul>

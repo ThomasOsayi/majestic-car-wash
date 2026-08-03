@@ -10,7 +10,7 @@ import CtaSlim from "@/components/CtaSlim";
 export const metadata: Metadata = {
   title: "Membership | Majestic Car Wash",
   description:
-    "Member pricing, perks, and real savings. Majestic Club from $19.99/mo, Club Plus, and Club Elite. Not unlimited. No contracts, cancel anytime.",
+    "Member pricing, perks, and real savings. Majestic Club from $24.99/mo, Club Plus, and Club Elite. Not unlimited. No contracts, cancel anytime.",
 };
 
 export default function MembershipPage() {

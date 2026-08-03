@@ -6,7 +6,7 @@ import RevealOnScroll from "./RevealOnScroll";
 const QA = [
   {
     q: "Is this an unlimited wash plan?",
-    a: "No. Members pay a low monthly fee for member pricing, perks, and savings, and still pay (less) per wash. Club Plus and Club Elite also include a set number of Silver Washes each month.",
+    a: "No. Members pay a low monthly fee for member pricing, perks, and savings, and still pay less per wash. Club Plus includes 1 Full Service Wash each month and Club Elite includes 2.",
   },
   {
     q: "Can I cancel anytime?",
@@ -14,11 +14,15 @@ const QA = [
   },
   {
     q: "Do my included washes carry over?",
-    a: "Included monthly washes refresh at the start of each billing cycle. (Final rollover policy to be confirmed.)",
+    a: "Included monthly washes refresh at the start of each billing cycle and do not roll over.",
   },
   {
     q: "Does membership work on SUVs and trucks?",
     a: "Yes. Larger vehicles may carry the standard size upcharge on washes and detail services.",
+  },
+  {
+    q: "Do members get a frequent wash card too?",
+    a: "Frequent wash cards are available to every customer, member or not. Just ask the cashier on your next visit.",
   },
 ];
 

@@ -108,7 +108,7 @@ export default function Navbar() {
             Join Now
           </Link>
           <a className="nav-drawer-call" href={PHONE_TEL}>
-            Call (323) 933-7393 &middot; Open 7 Days 8AM-5PM
+            Call (323) 933-7393 &middot; Mon–Sat 8AM–6PM · Sun 8AM–5PM
           </a>
         </div>
       </div>

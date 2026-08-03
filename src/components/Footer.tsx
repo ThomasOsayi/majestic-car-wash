@@ -16,19 +16,19 @@ export default function Footer() {
           </div>
           <div className="footer-col">
             <h4>The Menu</h4>
-            <Link href="/menu">Silver Wash $29.99</Link>
-            <Link href="/menu">Gold Wash $34.99</Link>
-            <Link href="/menu">Diamond Wash $39.99</Link>
+            <Link href="/menu">Silver Wash $31.99</Link>
+            <Link href="/menu">Gold Wash $36.99</Link>
+            <Link href="/menu">Diamond Wash $41.99</Link>
             <Link href="/menu">Detailing Services</Link>
             <Link href="/menu">À La Carte</Link>
           </div>
           <div className="footer-col">
             <h4>Save</h4>
-            <Link href="/deals">Valpak Coupons</Link>
+            <Link href="/deals">Coupons &amp; Specials</Link>
             <Link href="/deals">Thursday Special</Link>
             <Link href="/deals">Wash Books</Link>
+            <Link href="/deals">Frequent Wash Card</Link>
             <Link href="/membership">Membership Tiers</Link>
-            <a href="tel:+13239337393">Call to Join</a>
           </div>
           <div className="footer-col">
             <h4>Connect</h4>

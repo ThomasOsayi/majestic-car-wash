@@ -16,7 +16,7 @@ export default function ContactForm() {
             <h3>Questions? Quotes? Big detail job?</h3>
             <p>
               Call us at <strong>(323) 933-7393</strong> or stop by. We&apos;re open 7 days a
-              week, 8AM to 5PM, one block west of Fairfax. For detail estimates, send a few
+              week, Monday to Saturday 8AM to 6PM and Sunday 8AM to 5PM, one block west of Fairfax. For detail estimates, send a few
               photos of your vehicle and we&apos;ll get right back to you.
             </p>
             <p>8017 W 3rd Street<br />Los Angeles, CA 90048</p>

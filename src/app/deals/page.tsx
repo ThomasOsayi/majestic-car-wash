@@ -8,7 +8,7 @@ import CtaSlim from "@/components/CtaSlim";
 export const metadata: Metadata = {
   title: "Coupons & Specials | Majestic Car Wash",
   description:
-    "Current Valpak coupons, weekly Thursday, senior, Uber/Lyft and student specials, wash books, gift certificates, and Shell gas savings.",
+    "Current coupons, weekly Thursday, senior, Uber/Lyft and student specials, wash books, rain checks, gift certificates, and Shell gas savings.",
 };
 
 export default function DealsPage() {
@@ -19,12 +19,12 @@ export default function DealsPage() {
         img="/majestic/storefront.jpg"
         label="Save More"
         title="Coupons & Specials"
-        sub="Current Valpak offers, weekly specials, wash books, and ways to save every time you visit."
+        sub="Current offers, weekly specials, wash books, and ways to save every time you visit."
       />
       <Specials />
       <CtaSlim
         heading="Save on every single visit."
-        text="Become a Majestic member for member pricing on every wash and detail, plus every 10th wash free."
+        text="Become a Majestic member for member pricing on every wash and detail. Plans start at $24.99/mo."
         href="/membership"
         btn="See Membership Tiers →"
       />

@@ -10,7 +10,7 @@ import ContactForm from "@/components/ContactForm";
 export const metadata: Metadata = {
   title: "About & Contact | Majestic Car Wash",
   description:
-    "Beverly Grove's hand car wash and complete auto detailing. 100% hand wash, personalized care, and Shell gas on-site. 8017 W 3rd St, open 7 days, 8AM to 5PM.",
+    "Beverly Grove's hand car wash and complete auto detailing. 100% hand wash, personalized care, and Shell gas on-site. 8017 W 3rd St, Mon–Sat 8AM–6PM, Sunday 8AM–5PM.",
 };
 
 export default function ContactPage() {

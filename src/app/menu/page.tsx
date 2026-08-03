@@ -24,7 +24,7 @@ export default function MenuPage() {
       <Services />
       <CtaSlim
         heading="Wash more, pay less."
-        text="Members get member pricing on every wash and detail, plus every 10th wash free. Plans start at $19.99/mo."
+        text="Members get member pricing on every wash and detail, plus included washes on higher tiers. Plans start at $24.99/mo."
         href="/membership"
         btn="See Membership Tiers →"
       />

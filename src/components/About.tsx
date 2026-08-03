@@ -17,16 +17,10 @@ export default function About() {
               <div className="about-img">
                 <img src="/majestic/detailing-bay.jpg" alt="Complete auto detailing in our bay" />
               </div>
-              <div className="about-img">
-                <img src="/majestic/storefront.jpg" alt="Majestic Hand Car Wash neon storefront sign" />
-              </div>
             </div>
             <div className="about-col">
               <div className="about-img">
-                <img src="/majestic/service-menu-card.jpg" alt="Majestic wash and detail menu" />
-              </div>
-              <div className="about-img">
-                <img src="/majestic/wash-menu-sign.jpg" alt="Silver, Gold and Diamond wash tiers" />
+                <img src="/majestic/storefront.jpg" alt="Majestic Hand Car Wash neon storefront sign" />
               </div>
             </div>
             <div className="about-badge">

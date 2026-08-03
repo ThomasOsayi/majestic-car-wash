@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Majestic Car Wash | Hand Car Wash & Detailing in Beverly Grove, LA",
   description:
-    "Beverly Grove's 100% hand car wash and complete auto detailing. Washes from $29.99, full detail services, and member pricing from $19.99/mo. Open 7 days, 8AM to 5PM, one block west of Fairfax.",
+    "Beverly Grove's 100% hand car wash and complete auto detailing. Washes from $31.99, full detail services, and member pricing from $24.99/mo. Open Monday to Saturday 8AM to 6PM, Sunday 8AM to 5PM, one block west of Fairfax.",
 };
 
 export default function RootLayout({

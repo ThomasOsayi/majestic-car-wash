@@ -11,7 +11,7 @@ export default function CtaBand() {
         <h2>Wash More. Pay Less.</h2>
         <p>
           Join Majestic Club for member pricing on every wash and detail.
-          Every 10th wash free. No contracts, cancel anytime.
+          No contracts, cancel anytime.
         </p>
         <Link href="/membership" className="btn btn-white">
           See Membership Tiers →
